@@ -55,19 +55,17 @@ sub add {
         }
     }
 
-    # TODO: Hash ?
-    my $key = join( '_', $name, $sec_name );
-
-    if ( $redis->exists($key) ) {
-        $redis->incrby( $key, $sec_count_n );
+    if ( $redis->exists($name) ) {
+         $redis->hincrby( $name, $sec_count, $sec_count_n);
     }
     else {
-        $redis->set( $key, $sec_count_n );
+        $redis->hmset( $name, $sec_name, $sec_name_value, $sec_count,
+            $sec_count_n);
     }
 
-    my $ret = $redis->get($key);
+    my $ret = $redis->hmget($name, $sec_count);
 
-    return $ret;
+    return $ret->[0];
 
 #return
 #"collection: $name sec_name: $sec_name sec_name_value: $sec_name_value sec_count: $sec_count sec_count_n: $sec_count_n";
