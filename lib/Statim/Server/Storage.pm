@@ -31,7 +31,7 @@ sub add {
 
     my $redis = Redis->new( server => $self->redis_server );
 
-    my ( $sec_name, $sec_name_value, $sec_count, $sec_count_n ) = @_;
+    my ( $sec_name, $sec_name_value, $sec_count, $sec_count_n );
     foreach my $key ( keys %{$conf} ) {
         next unless defined( $conf->{$key}->{fields} );
 
