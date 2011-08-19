@@ -62,7 +62,7 @@ sub watch_socket {
     $headers_io_watcher = AE::io $sock, 0, sub {
         while ( defined( my $line = <$sock> ) ) {
             $line =~ s/\r?\n$//;
-            print "Received: [$line] " . length($line) . ' ' . ord($line) . "\n";
+            #print "Received: [$line] " . length($line) . ' ' . ord($line) . "\n";
 
             if ( length($line) == 1 and ord($line) == CTRL_D ) {
                 print $sock "Received EOF.  Closing connection...\r\n";

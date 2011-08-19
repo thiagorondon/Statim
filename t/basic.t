@@ -58,6 +58,11 @@ test_tcp(
         $res = <$sock>;
         is $res, "OK 4\r\n";
 
+        note "simple get";
+        print {$sock} 'get collection1 foo';
+        $res = <$sock>;
+        is $res, "OK 4\r\n";
+
 
         note "finalize";
         print {$sock} "quit\n";

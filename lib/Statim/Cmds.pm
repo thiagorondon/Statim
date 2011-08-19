@@ -34,8 +34,8 @@ sub add {
 }
 
 sub get {
-    my ( $self, $name ) = @_;
-    return 'OK ' . $self->_storage->get($name);
+    my ( $self, $name, $sec_count ) = @_;
+    return 'OK ' . $self->_storage->get($name, $sec_count );
 }
 
 1;

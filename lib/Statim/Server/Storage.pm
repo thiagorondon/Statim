@@ -6,6 +6,7 @@ use warnings;
 
 ## TODO: Make ::Storage::Custom
 ## This code is hardcoded a lot.
+## Use the same redis connection per class ?
 
 use Statim::Config;
 
@@ -15,14 +16,14 @@ my $conf   = $config->get('etc/config.json');
 use Redis;
 
 sub new {
-    my ($class, $self) = @_;
+    my ( $class, $self ) = @_;
     bless $self, $class;
     return $self;
 }
 
 sub redis_server {
     my $self = shift;
-    return join(':', $self->{redis_host}, $self->{redis_port});
+    return join( ':', $self->{redis_host}, $self->{redis_port} );
 }
 
 sub add {
@@ -56,26 +57,19 @@ sub add {
     }
 
     if ( $redis->exists($name) ) {
-         $redis->hincrby( $name, $sec_count, $sec_count_n);
+        $redis->hincrby( $name, $sec_count, $sec_count_n );
     }
     else {
-        $redis->hmset( $name, $sec_name, $sec_name_value, $sec_count,
-            $sec_count_n);
+        $redis->hmset( $name, $sec_name, $sec_name_value, $sec_count, $sec_count_n );
     }
-
-    my $ret = $redis->hmget($name, $sec_count);
-
-    return $ret->[0];
-
-#return
-#"collection: $name sec_name: $sec_name sec_name_value: $sec_name_value sec_count: $sec_count sec_count_n: $sec_count_n";
-
+    return $self->get( $name, $sec_count );
 }
 
 sub get {
-    my ( $self, $name ) = @_;
-    return "OK";
-    #return $redis->get($name);
+    my ( $self, $name, $sec_count ) = @_;
+    my $redis = Redis->new( server => $self->redis_server );
+    my $ret = $redis->hmget( $name, $sec_count );
+    return $ret->[0];
 }
 
 1;
