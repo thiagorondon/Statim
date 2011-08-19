@@ -16,18 +16,14 @@ use Statim::Server::Line;
 use constant CTRL_D => 4;
 
 sub new {
-    my $class = shift;
-    my $self  = {};
+    my ( $class, $self ) = @_;
     bless $self, $class;
     return $self;
 }
 
 sub start_listen {
     my ( $self, $host, $port ) = @_;
-
-    $self->{server} =
-      tcp_server( $host, $port, $self->_accept_handler(), \&prepare_handler );
-
+    $self->{server} = tcp_server( $host, $port, $self->_accept_handler(), \&prepare_handler );
 }
 
 sub prepare_handler {
@@ -41,11 +37,11 @@ sub _accept_handler {
     return sub {
         my ( $sock, $peer_host, $peer_port ) = @_;
 
-        warn "$sock Accepted connection from $peer_host:$peer_port\n";
+        warn "Accepted connection from $peer_host:$peer_port\n";
         return unless $sock;
 
         setsockopt( $sock, IPPROTO_TCP, TCP_NODELAY, 1 )
-          or die "setsockopt(TCP_NODELAY) failed: $!";
+            or die "setsockopt(TCP_NODELAY) failed: $!";
         $sock->autoflush(1);
 
         $self->watch_socket($sock);
@@ -57,14 +53,16 @@ sub watch_socket {
 
     my $headers_io_watcher;
 
-    my $cmd_line = Statim::Server::Line->new;
+    my $cmd_line = Statim::Server::Line->new(
+        {   redis_host => $self->{redis_host},
+            redis_port   => $self->{redis_port}
+        }
+    );
 
     $headers_io_watcher = AE::io $sock, 0, sub {
         while ( defined( my $line = <$sock> ) ) {
             $line =~ s/\r?\n$//;
-            print "Received: [$line] "
-              . length($line) . ' '
-              . ord($line) . "\n";
+            print "Received: [$line] " . length($line) . ' ' . ord($line) . "\n";
 
             if ( length($line) == 1 and ord($line) == CTRL_D ) {
                 print $sock "Received EOF.  Closing connection...\r\n";

@@ -5,8 +5,7 @@ use Statim::Parser;
 use Statim::Cmds;
 
 sub new {
-    my $class = shift;
-    my $self  = {};
+    my ($class, $self) = @_;
     bless $self, $class;
     return $self;
 }
@@ -15,7 +14,10 @@ sub do {
     my ( $self, $line ) = @_;
 
     my $parser = Statim::Parser->new;
-    my $cmds   = Statim::Cmds->new;
+    my $cmds   = Statim::Cmds->new({
+            redis_host => $self->{redis_host},
+            redis_port => $self->{redis_port}
+        });
 
     my @args = $parser->do($line);
     my $ret;
