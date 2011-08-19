@@ -7,6 +7,7 @@ use warnings;
 ## TODO: Make ::Storage::Custom
 ## This code is hardcoded a lot.
 ## Use the same redis connection per class ?
+## Just one enum ?
 
 use Statim::Config;
 
@@ -31,7 +32,7 @@ sub add {
 
     my $redis = Redis->new( server => $self->redis_server );
 
-    my ( $sec_name, $sec_name_value, $sec_count, $sec_count_n );
+    my ( %data, $sec_count, $sec_count_n, $sec_name, $sec_name_value );
     foreach my $key ( keys %{$conf} ) {
         next unless defined( $conf->{$key}->{fields} );
 
@@ -43,8 +44,9 @@ sub add {
                 my ( $a_name, $a_value ) = split( /:/, $arg );
 
                 if ( $a_name eq $field and $type eq 'enum' ) {
-                    $sec_name       = $field;
-                    $sec_name_value = $a_value;
+                    #$sec_name       = $field;
+                    #$sec_name_value = $a_value;
+                    $data{$field} = $a_value;
                 }
 
                 if ( $a_name eq $field and $type eq 'count' ) {
@@ -60,7 +62,9 @@ sub add {
         $redis->hincrby( $name, $sec_count, $sec_count_n );
     }
     else {
-        $redis->hmset( $name, $sec_name, $sec_name_value, $sec_count, $sec_count_n );
+        my @args = ();
+        foreach my $key (keys %data) { push(@args, $key, $data{$key}); }
+        $redis->hmset( $name, @args, $sec_count, $sec_count_n );
     }
     return $self->get( $name, $sec_count );
 }
