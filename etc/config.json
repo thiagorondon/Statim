@@ -1,0 +1,11 @@
+{ 
+	"collection1" : {
+		"fields" : {
+			"ts" : { "epoch" : "day" },
+			"foo" : "count",
+			"bar" : "enum"
+		},
+	}
+}
+
+
