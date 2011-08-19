@@ -22,7 +22,7 @@ sub do {
     my @args = $parser->do($line);
     my $ret;
     unless (@args) {
-        $ret = "ERROR";
+        $ret = "CLIENT ERROR parser";
     }
     else {
         my $cmd = shift(@args);
