@@ -135,7 +135,7 @@ sub _get_ts_range {
     if ( $ts =~ /-/ ) {
         my ( $ts_ini, $ts_fim ) = split( '-', $ts );
         push( @ts_args, $ts_ini );
-        my $ts_tmp = 0;
+        my $ts_tmp = 0; # = $ts_ini ?
         while (1) {
             $ts_tmp += $period;
             last if $ts_tmp > $ts_fim;
