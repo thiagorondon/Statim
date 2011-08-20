@@ -5,6 +5,7 @@ use strict;
 use warnings;
 use Switch;
 use DateTime;
+use POSIX qw(floor);
 
 ## TODO: Make ::Storage::Custom
 ## This code is hardcoded a lot.
@@ -29,7 +30,7 @@ sub redis_server {
 
 sub _find_period_key {
     my ( $self, $period, $epoch ) = @_;
-    return int( $epoch / $period );
+    return floor( $epoch / $period );
 }
 
 sub _get_period_key {
@@ -111,13 +112,12 @@ sub add {
 
     my $ekey =
       $self->_find_period_key( $self->_get_period_key($collection), $ts );
-
     my ( $ns_count, $ns_count_n, %data ) =
       $self->_parse_args_to_add( $collection, @args );
     my $nkey = $self->_make_key_name( $collection, $ekey, sort keys %data );
 
     $self->_save_data( $redis, $nkey, $ns_count, $ns_count_n, %data );
-    return $self->get( $collection, ( sort keys %data ), $ns_count );
+    return $self->get( $collection, ( sort keys %data ), "ts:$ts", $ns_count );
 }
 
 sub _parse_args_to_get {
@@ -130,17 +130,16 @@ sub _parse_args_to_get {
 sub _get_ts_range {
     my ( $self, $collection, $ts ) = @_;
 
-    my $period = $self->_get_period_key($collection);
-
+    my $period = $self->_get_period_key($collection, $ts);
     my @ts_args;
     if ( $ts =~ /-/ ) {
         my ( $ts_ini, $ts_fim ) = split( '-', $ts );
         push( @ts_args, $ts_ini );
-        my $ts_tmp = $ts_ini;
+        my $ts_tmp = 0;
         while (1) {
             $ts_tmp += $period;
             last if $ts_tmp > $ts_fim;
-            push( @ts_args, $ts_tmp );
+            push( @ts_args, $ts_tmp ) if $ts_tmp > $ts_ini;
         }
     }
     else {
@@ -162,7 +161,6 @@ sub get {
         my $ekey =
           $self->_find_period_key( $self->_get_period_key($collection),
             $ts_item );
-
         my $nkey = $self->_make_key_name( $collection, $ekey, sort @names );
         my $ret = $redis->hmget( $nkey, $ns_count );
         $count += $ret->[0] if $ret->[0];
