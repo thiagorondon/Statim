@@ -20,8 +20,9 @@ test_tcp(
     server => sub {
         my $port   = shift;
         my $server = Statim::Server::AnyEvent->new(
-            {   redis_host => $redis_host,
-                redis_port   => $redis_port
+            {
+                redis_host => $redis_host,
+                redis_port => $redis_port
             }
 
         );

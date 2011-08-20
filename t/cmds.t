@@ -5,5 +5,5 @@ use Statim;
 
 my $cmds = Statim::Cmds->new;
 is( $cmds->version, $Statim::VERSION );
-is( $cmds->quit, 0 );
+is( $cmds->quit,    0 );
 
