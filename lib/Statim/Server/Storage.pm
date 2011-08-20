@@ -124,21 +124,50 @@ sub _parse_args_to_get {
     my ( $self, @names ) = @_;
     my $collection = shift(@names);
     my $ns_count   = pop(@names);
-    return ( $collection, $ns_count, grep { ! /ts:/ } @names );
+    return ( $collection, $ns_count, grep { !/ts:/ } @names );
+}
+
+sub _get_ts_range {
+    my ( $self, $collection, $ts ) = @_;
+
+    my $period = $self->_get_period_key($collection);
+
+    my @ts_args;
+    if ( $ts =~ /-/ ) {
+        my ( $ts_ini, $ts_fim ) = split( '-', $ts );
+        push( @ts_args, $ts_ini );
+        my $ts_tmp = $ts_ini;
+        while (1) {
+            $ts_tmp += $period;
+            last if $ts_tmp > $ts_fim;
+            push( @ts_args, $ts_tmp );
+        }
+    }
+    else {
+        push( @ts_args, $ts );
+    }
+    return @ts_args;
 }
 
 sub get {
     my ( $self, @args ) = @_;
     my ( $collection, $ns_count, @names ) = $self->_parse_args_to_get(@args);
 
-    my $ts = $self->_get_ts(@args);
-    my $ekey =
-      $self->_find_period_key( $self->_get_period_key($collection), $ts );
-    my $nkey = $self->_make_key_name( $collection, $ekey, sort @names );
+    my $ts      = $self->_get_ts(@args);
+    my @ts_args = $self->_get_ts_range( $collection, $ts );
+    my $redis   = $self->_redis_conn;
+    my $count   = 0;
 
-    my $redis = $self->_redis_conn;
-    my $ret = $redis->hmget( $nkey, $ns_count );
-    return $ret->[0];
+    foreach my $ts_item (@ts_args) {
+        my $ekey =
+          $self->_find_period_key( $self->_get_period_key($collection),
+            $ts_item );
+
+        my $nkey = $self->_make_key_name( $collection, $ekey, sort @names );
+        my $ret = $redis->hmget( $nkey, $ns_count );
+        $count += $ret->[0] if $ret->[0];
+    }
+    return $count;
 }
 
 1;
