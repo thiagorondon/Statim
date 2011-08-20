@@ -124,7 +124,7 @@ sub _parse_args_to_get {
     my ( $self, @names ) = @_;
     my $collection = shift(@names);
     my $ns_count   = pop(@names);
-    return ( $collection, $ns_count, @names );
+    return ( $collection, $ns_count, grep { ! /ts:/ } @names );
 }
 
 sub get {
