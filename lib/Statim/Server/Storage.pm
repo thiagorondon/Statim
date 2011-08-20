@@ -32,7 +32,7 @@ sub add {
 
     my $redis = Redis->new( server => $self->redis_server );
 
-    my ( %data, $sec_count, $sec_count_n, $sec_name, $sec_name_value );
+    my ( %data, $sec_count, $sec_count_n );
     foreach my $key ( keys %{$conf} ) {
         next unless defined( $conf->{$key}->{fields} );
 
@@ -44,8 +44,6 @@ sub add {
                 my ( $a_name, $a_value ) = split( /:/, $arg );
 
                 if ( $a_name eq $field and $type eq 'enum' ) {
-                    #$sec_name       = $field;
-                    #$sec_name_value = $a_value;
                     $data{$field} = $a_value;
                 }
 
@@ -58,21 +56,29 @@ sub add {
         }
     }
 
-    if ( $redis->exists($name) ) {
-        $redis->hincrby( $name, $sec_count, $sec_count_n );
+    my $nkey = join('_-', $name, sort keys %data );
+    
+    if ( $redis->exists($nkey) ) {
+        $redis->hincrby( $nkey, $sec_count, $sec_count_n );
     }
     else {
         my @args = ();
         foreach my $key (keys %data) { push(@args, $key, $data{$key}); }
-        $redis->hmset( $name, @args, $sec_count, $sec_count_n );
+        $redis->hmset( $nkey, @args, $sec_count, $sec_count_n );
     }
-    return $self->get( $name, $sec_count );
+    return $self->get( $nkey, $sec_count );
 }
 
 sub get {
-    my ( $self, $name, $sec_count ) = @_;
+    my ( $self, @names ) = @_;
+    
+    my $collection = shift(@names);
+    my $sec_count = pop(@names);
+    
+    my $nkey = join('_-', $collection, sort @names );
+    
     my $redis = Redis->new( server => $self->redis_server );
-    my $ret = $redis->hmget( $name, $sec_count );
+    my $ret = $redis->hmget( $nkey, $sec_count );
     return $ret->[0];
 }
 

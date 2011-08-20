@@ -44,22 +44,22 @@ test_tcp(
         is $res, $Statim::VERSION . "\r\n";
 
         note "simple add 1";
-        print {$sock} 'add collection1 bar:foo foo:1';
+        print {$sock} 'add collection1 bar:str jaz:ing foo:1';
         $res = <$sock>;
         is $res, "OK 1\r\n";
 
         note "simple add 3";
-        print {$sock} 'add collection1 bar:foo foo:3';
+        print {$sock} 'add collection1 jaz:ing bar:str foo:3';
         $res = <$sock>;
         is $res, "OK 4\r\n";
 
         note "simple add 0";
-        print {$sock} 'add collection1 bar:foo foo:0';
+        print {$sock} 'add collection1 bar:str jaz:ing foo:0';
         $res = <$sock>;
         is $res, "OK 4\r\n";
 
         note "simple get";
-        print {$sock} 'get collection1 bar foo';
+        print {$sock} 'get collection1 bar jaz foo';
         $res = <$sock>;
         is $res, "OK 4\r\n";
 

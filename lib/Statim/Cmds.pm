@@ -29,13 +29,13 @@ sub _storage {
 }
 
 sub add {
-    my ( $self, $name, @args ) = @_;
-    return 'OK ' . $self->_storage->add( $name, @args );
+    my $self = shift;
+    return 'OK ' . $self->_storage->add( @_ );
 }
 
 sub get {
-    my ( $self, $name, $sec_count ) = @_;
-    return 'OK ' . $self->_storage->get($name, $sec_count );
+    my $self = shift;
+    return 'OK ' . $self->_storage->get( @_ );
 }
 
 1;

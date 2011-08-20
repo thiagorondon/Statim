@@ -3,7 +3,8 @@
 		"fields" : {
 			"ts" : { "epoch" : "day" },
 			"foo" : "count",
-			"bar" : "enum"
+			"bar" : "enum",
+            "jaz" : "enum"
 		},
 	}
 }
