@@ -11,7 +11,7 @@ use AnyEvent;
 use AnyEvent::Util qw(WSAEWOULDBLOCK);
 use AnyEvent::Socket;
 
-use Statim::Server::Line;
+use Statim::Command::Line;
 
 use constant CTRL_D => 4;
 
@@ -59,7 +59,7 @@ sub watch_socket {
 
     my $headers_io_watcher;
 
-    my $cmd_line = Statim::Server::Line->new( { storage => $self->{storage} } );
+    my $cmd_line = Statim::Command::Line->new( { storage => $self->{storage} } );
 
     $headers_io_watcher = AE::io $sock, 0, sub {
         while ( defined( my $line = <$sock> ) ) {
@@ -92,7 +92,7 @@ sub watch_socket {
         }
         elsif ( !$! ) {
             undef $headers_io_watcher;
-            die "client disconnected";
+            #die "client disconnected";
         }
     };
 }

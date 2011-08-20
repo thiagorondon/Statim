@@ -8,17 +8,11 @@ use Benchmark ':all';
 use FindBin qw($Bin);
 use lib "$Bin/tlib";
 use lib "$Bin/../lib";
-use Test::SpawnRedisServer;
 use Test::TCP;
-
-my ( $c, $srv ) = redis();
-END { $c->() if $c }
+use Test::Statim::Runner;
 
 use Statim;
-use Statim::Server::AnyEvent;
 
-my ( $redis_host, $redis_port ) = split( ':', $srv );
-my $host = undef;
 my $port = empty_port();
 
 my $pid = fork();
@@ -41,13 +35,8 @@ if ( $pid > 0 ) {
 
 }
 else {
-    my $server = Statim::Server::AnyEvent->new(
-        {
-            redis_host => $redis_host,
-            redis_port => $redis_port
-        }
-    );
-    $server->start_listen( $host, $port );
-    AE::cv->recv();
+    my $app  = test_statim_server($port);
+    $app->run;
+
 }
 
