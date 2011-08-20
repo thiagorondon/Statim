@@ -1,11 +1,10 @@
 
-package Statim::Cmds;
+package Statim::Command;
 
 use strict;
 use warnings;
 
 use Statim;
-use Statim::Server::Storage;
 
 sub new {
     my ( $class, $self ) = @_;
@@ -20,12 +19,7 @@ sub quit {0}
 
 sub _storage {
     my $self = shift;
-
-    Statim::Server::Storage->new(
-        {   redis_host => $self->{redis_host},
-            redis_port => $self->{redis_port}
-        }
-    );
+    return $self->{storage};
 }
 
 sub add {

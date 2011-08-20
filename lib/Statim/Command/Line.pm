@@ -1,8 +1,8 @@
 
-package Statim::Server::Line;
+package Statim::Command::Line;
 
 use Statim::Parser;
-use Statim::Cmds;
+use Statim::Command;
 
 sub new {
     my ($class, $self) = @_;
@@ -14,9 +14,8 @@ sub do {
     my ( $self, $line ) = @_;
 
     my $parser = Statim::Parser->new;
-    my $cmds   = Statim::Cmds->new({
-            redis_host => $self->{redis_host},
-            redis_port => $self->{redis_port}
+    my $cmds   = Statim::Command->new({
+            storage => $self->{storage}
         });
 
     my @args = $parser->do($line);

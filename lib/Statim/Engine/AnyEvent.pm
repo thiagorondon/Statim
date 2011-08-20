@@ -1,5 +1,5 @@
 
-package Statim::Server::AnyEvent;
+package Statim::Engine::AnyEvent;
 
 use strict;
 use warnings;
@@ -21,9 +21,15 @@ sub new {
     return $self;
 }
 
-sub start_listen {
-    my ( $self, $host, $port ) = @_;
+sub init {
+    my ($self) = @_;
+    my $host   = $self->{host};
+    my $port   = $self->{port};
     $self->{server} = tcp_server( $host, $port, $self->_accept_handler(), \&prepare_handler );
+}
+
+sub start {
+    AE::cv->recv();
 }
 
 sub prepare_handler {
@@ -37,7 +43,7 @@ sub _accept_handler {
     return sub {
         my ( $sock, $peer_host, $peer_port ) = @_;
 
-        warn "Accepted connection from $peer_host:$peer_port\n";
+        #warn "Accepted connection from $peer_host:$peer_port\n";
         return unless $sock;
 
         setsockopt( $sock, IPPROTO_TCP, TCP_NODELAY, 1 )
@@ -53,15 +59,12 @@ sub watch_socket {
 
     my $headers_io_watcher;
 
-    my $cmd_line = Statim::Server::Line->new(
-        {   redis_host => $self->{redis_host},
-            redis_port   => $self->{redis_port}
-        }
-    );
+    my $cmd_line = Statim::Server::Line->new( { storage => $self->{storage} } );
 
     $headers_io_watcher = AE::io $sock, 0, sub {
         while ( defined( my $line = <$sock> ) ) {
             $line =~ s/\r?\n$//;
+
             #print "Received: [$line] " . length($line) . ' ' . ord($line) . "\n";
 
             if ( length($line) == 1 and ord($line) == CTRL_D ) {
@@ -72,12 +75,12 @@ sub watch_socket {
 
                 #print $sock "You sent [$line]\r\n";
                 my $ret = $cmd_line->do($line);
-                if ($ret) {
+                if ($ret and $line ne 'quit') {
                     print $sock "$ret\r\n";
                 }
                 else {    # quit
+                    print $sock "Bye...\r\n";
                     undef $headers_io_watcher;
-                    die 'quit';
                 }
 
             }

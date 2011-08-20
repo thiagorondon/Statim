@@ -12,13 +12,15 @@ sub new {
 
 sub do {
     my ( $self, $message ) = @_;
+    return () unless $message;
 
     # TODO: escape_char
     my @args = split( ' ', $message );
 
     my $cmd = shift(@args);
-    return () unless grep { /$cmd/ } @valid_cmds;
+    return () unless grep {/$cmd/} @valid_cmds;
     return ( $cmd, @args );
+
 }
 
 1;
