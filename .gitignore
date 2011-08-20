@@ -6,3 +6,4 @@ MYMETA.yml
 inc/
 *~
 *.sw*
+redis-server.log
