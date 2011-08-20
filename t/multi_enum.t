@@ -38,14 +38,9 @@ test_tcp(
             Proto    => 'tcp'
         ) or die "Cannot open client socket: $!";
 
-        note "version";
-        print {$sock} "version\n";
-        my $res = <$sock>;
-        is $res, $Statim::VERSION . "\r\n";
-
         note "simple add 1";
         print {$sock} 'add collection1 bar:str jaz:ing foo:1';
-        $res = <$sock>;
+        my $res = <$sock>;
         is $res, "OK 1\r\n";
 
         note "simple add 3";

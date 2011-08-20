@@ -27,6 +27,12 @@ sub do {
     else {
         my $cmd = shift(@args);
         $ret = $cmds->$cmd(@args);
+        my $se = substr($ret, 0, 1);
+        if ($se eq '-') {
+            $ret = "SERVER ERROR " . substr($ret, 1);
+        } else {
+            $ret = "OK " . $ret;
+        }
     }
     return $ret;
 }

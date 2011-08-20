@@ -30,12 +30,12 @@ sub _storage {
 
 sub add {
     my $self = shift;
-    return 'OK ' . $self->_storage->add( @_ );
+    return $self->_storage->add( @_ );
 }
 
 sub get {
     my $self = shift;
-    return 'OK ' . $self->_storage->get( @_ );
+    return $self->_storage->get( @_ );
 }
 
 1;

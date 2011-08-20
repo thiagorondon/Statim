@@ -1,10 +1,10 @@
 { 
 	"collection1" : {
+		"period" : "84600",
 		"fields" : {
-			"ts" : { "epoch" : "day" },
 			"foo" : "count",
 			"bar" : "enum",
-            "jaz" : "enum"
+            		"jaz" : "enum"
 		},
 	}
 }

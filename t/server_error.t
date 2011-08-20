@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 4;
+use Test::More tests => 1;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -38,31 +38,10 @@ test_tcp(
             Proto    => 'tcp'
         ) or die "Cannot open client socket: $!";
 
-        note "version";
-        print {$sock} "version\n";
+        note "simple add collection with no config in the server";
+        print {$sock} 'add baz bar:foo foo:1';
         my $res = <$sock>;
-        is $res, 'OK ' . $Statim::VERSION . "\r\n";
-
-        note "simple add 1";
-        print {$sock} 'add collection1 bar:foo foo:1';
-        $res = <$sock>;
-        is $res, "OK 1\r\n";
-
-        note "simple add 3";
-        print {$sock} 'add collection1 bar:foo foo:3';
-        $res = <$sock>;
-        is $res, "OK 4\r\n";
-
-        note "simple add 0";
-        print {$sock} 'add collection1 bar:foo foo:0';
-        $res = <$sock>;
-        is $res, "OK 4\r\n";
-
-        note "simple get";
-        print {$sock} 'get collection1 bar foo';
-        $res = <$sock>;
-        is $res, "OK 4\r\n";
-
+        is $res, "SERVER ERROR no collection\r\n";
 
         note "finalize";
         print {$sock} "quit\n";
