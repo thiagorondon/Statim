@@ -12,7 +12,6 @@ lib/Statim/Command.pm
 lib/Statim/Command/Line.pm
 lib/Statim/Config.pm
 lib/Statim/Config/Parse.pm
-lib/Statim/Engine/.AnyEvent.pm.swp
 lib/Statim/Engine/AnyEvent.pm
 lib/Statim/Parser.pm
 lib/Statim/Runner.pm
@@ -20,9 +19,6 @@ lib/Statim/Storage/Redis.pm
 Makefile.PL
 MANIFEST			This list of files
 META.yml
-t/.basic.t.swp
-t/.client.t.swp
-t/.ts.t.swp
 t/basic.t
 t/client.t
 t/client_error.t
@@ -33,6 +29,5 @@ t/multi_enum.t
 t/parser.t
 t/server_error.t
 t/tlib/Test/SpawnRedisServer.pm
-t/tlib/Test/Statim/.Runner.pm.swp
 t/tlib/Test/Statim/Runner.pm
 t/ts.t
