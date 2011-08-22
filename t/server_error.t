@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 1;
+use Test::More tests => 2;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -28,6 +28,11 @@ test_tcp(
         note "simple add collection with no config in the server";
         print {$sock} 'add baz bar:foo foo:1';
         my $res = <$sock>;
+        is $res, "SERVER ERROR no collection\r\n";
+
+        note "simple get collection with no config in the server";
+        print {$sock} 'get baz bar foo';
+        $res = <$sock>;
         is $res, "SERVER ERROR no collection\r\n";
 
         note "finalize";

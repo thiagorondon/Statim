@@ -151,6 +151,8 @@ sub get {
     my ( $self, @args ) = @_;
     my ( $collection, $ns_count, @names ) = $self->_parse_args_to_get(@args);
 
+    return "-no collection" unless $self->_check_collection($collection);
+
     my $ts      = $self->_get_ts(@args);
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $redis   = $self->_redis_conn;
