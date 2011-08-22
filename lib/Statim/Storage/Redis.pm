@@ -8,7 +8,6 @@ use DateTime;
 use POSIX qw(floor);
 use Scalar::Util qw(looks_like_number);
 
-## This code is hardcoded a lot.
 ## Use the same redis connection per class ?
 
 use Statim::Config;
