@@ -15,7 +15,7 @@ use Redis;
 
 my $config = Statim::Config->new;
 my $conf   = $config->get('etc/config.json');
-my $rconn = undef;
+my $rconn  = undef;
 
 sub new {
     my ( $class, $self ) = @_;
@@ -105,10 +105,10 @@ sub _save_data {
 }
 
 sub _arrange_key_subname {
-    my ( $self, %data) = @_;
+    my ( $self, %data ) = @_;
     my @args;
     foreach my $item ( sort keys %data ) {
-        push (@args, $item, $data{$item} );
+        push( @args, $item, $data{$item} );
     }
     return @args;
 }
@@ -123,11 +123,11 @@ sub add {
 
     my $ekey =
       $self->_find_period_key( $self->_get_period_key($collection), $ts );
-    
+
     my ( $ns_count, $ns_count_n, %data ) =
       $self->_parse_args_to_add( $collection, @args );
-    
-    my @ns_dt = $self->_arrange_key_subname( %data );
+
+    my @ns_dt = $self->_arrange_key_subname(%data);
 
     my $nkey = $self->_make_key_name( $collection, $ekey, @ns_dt );
     return $self->_save_data( $redis, $nkey, $ns_count, $ns_count_n, %data );
@@ -144,10 +144,10 @@ sub _arrange_key_by_array_subname {
     my ( $self, $ns_count, @args ) = @_;
     my @ret;
     foreach my $item ( sort @args ) {
-        my ($name, $value) = split(':', $item);
+        my ( $name, $value ) = split( ':', $item );
         next if $name eq 'ts' or $name eq $ns_count;
         next unless $name;
-        push (@ret, $name, $value );
+        push( @ret, $name, $value );
     }
     return @ret;
 }
@@ -155,12 +155,12 @@ sub _arrange_key_by_array_subname {
 sub _get_ts_range {
     my ( $self, $collection, $ts ) = @_;
 
-    my $period = $self->_get_period_key($collection, $ts);
+    my $period = $self->_get_period_key( $collection, $ts );
     my @ts_args;
     if ( $ts =~ /-/ ) {
         my ( $ts_ini, $ts_fim ) = split( '-', $ts );
         push( @ts_args, $ts_ini );
-        my $ts_tmp = 0; # = $ts_ini ?
+        my $ts_tmp = 0;    # = $ts_ini ?
         while (1) {
             $ts_tmp += $period;
             last if $ts_tmp > $ts_fim;
@@ -180,7 +180,7 @@ sub get {
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts      = $self->_get_ts(@args);
-    my @argr    = $self->_arrange_key_by_array_subname($ns_count, @names);
+    my @argr    = $self->_arrange_key_by_array_subname( $ns_count, @names );
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $redis   = $self->_redis_conn;
     my $count   = 0;
@@ -190,7 +190,7 @@ sub get {
           $self->_find_period_key( $self->_get_period_key($collection),
             $ts_item );
         my $nkey = $self->_make_key_name( $collection, $ekey, @argr );
-        my $ret = $redis->get( $nkey );
+        my $ret = $redis->get($nkey);
         $count += $ret if $ret;
     }
     return $count;
