@@ -43,7 +43,7 @@ test_tcp(
         is $res, "OK 4\r\n";
 
         note "simple get";
-        $res = $client->get( 'collection1', 'bar', 'foo' );
+        $res = $client->get( 'collection1', 'bar:foo', 'foo' );
         is $res, "OK 4\r\n";
 
         note "finalize";

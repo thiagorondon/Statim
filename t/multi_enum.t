@@ -40,7 +40,7 @@ test_tcp(
         is $res, "OK 4\r\n";
 
         note "simple get";
-        print {$sock} 'get collection1 bar jaz foo';
+        print {$sock} 'get collection1 bar:str jaz:ing foo';
         $res = <$sock>;
         is $res, "OK 4\r\n";
 

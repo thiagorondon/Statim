@@ -54,8 +54,8 @@ sub _redis_conn {
 sub _make_key_name {
     my $self = shift;
     my ( $collection, $ts, @ns ) = @_;
-    return join( '_-', @_ ) if $ts;
-    return join( '_-', $collection, @ns );
+    return join( '_-', grep { $_ } @_ ) if $ts;
+    return join( '_-', $collection, grep { $_ } @ns );
 }
 
 sub _parse_args_to_add {
@@ -96,13 +96,21 @@ sub _save_data {
     my ( $self, $redis, $nkey, $ns_count, $ns_count_n, %data ) = @_;
 
     if ( $redis->exists($nkey) ) {
-        $redis->hincrby( $nkey, $ns_count, $ns_count_n );
+        return $redis->incrby( $nkey, $ns_count_n );
     }
     else {
-        my @args = ();
-        foreach my $key ( keys %data ) { push( @args, $key, $data{$key} ); }
-        $redis->hmset( $nkey, @args, $ns_count, $ns_count_n );
+        $redis->set( $nkey, $ns_count_n );
+        return $ns_count_n;
     }
+}
+
+sub _arrange_key_subname {
+    my ( $self, %data) = @_;
+    my @args;
+    foreach my $item ( sort keys %data ) {
+        push (@args, $item, $data{$item} );
+    }
+    return @args;
 }
 
 sub add {
@@ -115,12 +123,14 @@ sub add {
 
     my $ekey =
       $self->_find_period_key( $self->_get_period_key($collection), $ts );
+    
     my ( $ns_count, $ns_count_n, %data ) =
       $self->_parse_args_to_add( $collection, @args );
-    my $nkey = $self->_make_key_name( $collection, $ekey, sort keys %data );
+    
+    my @ns_dt = $self->_arrange_key_subname( %data );
 
-    $self->_save_data( $redis, $nkey, $ns_count, $ns_count_n, %data );
-    return $self->get( $collection, ( sort keys %data ), "ts:$ts", $ns_count );
+    my $nkey = $self->_make_key_name( $collection, $ekey, @ns_dt );
+    return $self->_save_data( $redis, $nkey, $ns_count, $ns_count_n, %data );
 }
 
 sub _parse_args_to_get {
@@ -128,6 +138,18 @@ sub _parse_args_to_get {
     my $collection = shift(@names);
     my $ns_count   = pop(@names);
     return ( $collection, $ns_count, grep { !/ts:/ } @names );
+}
+
+sub _arrange_key_by_array_subname {
+    my ( $self, $ns_count, @args ) = @_;
+    my @ret;
+    foreach my $item ( sort @args ) {
+        my ($name, $value) = split(':', $item);
+        next if $name eq 'ts' or $name eq $ns_count;
+        next unless $name;
+        push (@ret, $name, $value );
+    }
+    return @ret;
 }
 
 sub _get_ts_range {
@@ -158,6 +180,7 @@ sub get {
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts      = $self->_get_ts(@args);
+    my @argr    = $self->_arrange_key_by_array_subname($ns_count, @names);
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $redis   = $self->_redis_conn;
     my $count   = 0;
@@ -166,9 +189,9 @@ sub get {
         my $ekey =
           $self->_find_period_key( $self->_get_period_key($collection),
             $ts_item );
-        my $nkey = $self->_make_key_name( $collection, $ekey, sort @names );
-        my $ret = $redis->hmget( $nkey, $ns_count );
-        $count += $ret->[0] if $ret->[0];
+        my $nkey = $self->_make_key_name( $collection, $ekey, @argr );
+        my $ret = $redis->get( $nkey );
+        $count += $ret if $ret;
     }
     return $count;
 }
