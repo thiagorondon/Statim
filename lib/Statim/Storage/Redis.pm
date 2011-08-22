@@ -7,7 +7,6 @@ use Switch;
 use DateTime;
 use POSIX qw(floor);
 
-## TODO: Make ::Storage::Custom
 ## This code is hardcoded a lot.
 ## Use the same redis connection per class ?
 
