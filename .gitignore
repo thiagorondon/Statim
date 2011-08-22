@@ -1,9 +1,15 @@
 blib/
 pm_to_blib
 Makefile
-META.yml    
+META.yml
 MYMETA.yml
 inc/
 *~
-*.sw*
+
+# *.sw* - is this really necessary?
+# vim swap files begin with .*
+# which you should ignore anyway
+.*
+!.gitignore
+
 redis-server.log
