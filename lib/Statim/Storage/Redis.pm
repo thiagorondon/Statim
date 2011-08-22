@@ -15,6 +15,7 @@ use Redis;
 
 my $config = Statim::Config->new;
 my $conf   = $config->get('etc/config.json');
+my $rconn = undef;
 
 sub new {
     my ( $class, $self ) = @_;
@@ -44,7 +45,10 @@ sub _check_collection {
 
 sub _redis_conn {
     my $self = shift;
-    Redis->new( server => $self->redis_server );
+    if ( !$rconn ) {
+        $rconn = Redis->new( server => $self->redis_server );
+    }
+    return $rconn;
 }
 
 sub _make_key_name {
