@@ -104,7 +104,7 @@ sub _save_data {
     }
 }
 
-sub _arrange_key_subname {
+sub _arrange_key_by_hash {
     my ( $self, %data ) = @_;
     my @args;
     foreach my $item ( sort keys %data ) {
@@ -127,7 +127,7 @@ sub add {
     my ( $ns_count, $ns_count_n, %data ) =
       $self->_parse_args_to_add( $collection, @args );
 
-    my @ns_dt = $self->_arrange_key_subname(%data);
+    my @ns_dt = $self->_arrange_key_by_hash(%data);
 
     my $nkey = $self->_make_key_name( $collection, $ekey, @ns_dt );
     return $self->_save_data( $redis, $nkey, $ns_count, $ns_count_n, %data );
@@ -140,7 +140,7 @@ sub _parse_args_to_get {
     return ( $collection, $ns_count, grep { !/ts:/ } @names );
 }
 
-sub _arrange_key_by_array_subname {
+sub _arrange_key_by_array {
     my ( $self, $ns_count, @args ) = @_;
     my @ret;
     foreach my $item ( sort @args ) {
@@ -180,7 +180,7 @@ sub get {
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts      = $self->_get_ts(@args);
-    my @argr    = $self->_arrange_key_by_array_subname( $ns_count, @names );
+    my @argr    = $self->_arrange_key_by_array( $ns_count, @names );
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $redis   = $self->_redis_conn;
     my $count   = 0;
