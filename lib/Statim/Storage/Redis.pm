@@ -92,7 +92,8 @@ sub _get_ts {
 }
 
 sub _save_data {
-    my ( $self, $redis, $key, $incrby ) = @_;
+    my ( $self, $key, $incrby ) = @_;
+    my $redis = $self->_redis_conn;
     return $redis->incrby( $key, $incrby ) if $redis->exists($key);
     $redis->set( $key, $incrby );
     return $incrby;
@@ -112,7 +113,6 @@ sub add {
 
     return "-no collection" unless $self->_check_collection($collection);
 
-    my $redis      = $self->_redis_conn;
     my $ts         = $self->_get_ts(@args);
     my $period_key = $self->_get_period_key($collection);
     my $period     = $self->_find_period_key( $period_key, $ts );
@@ -122,7 +122,7 @@ sub add {
     my @keys = $self->_arrange_key_by_hash(%data);
     my $key = $self->_make_key_name( $collection, $period, @keys );
 
-    return $self->_save_data( $redis, $key, $incrby );
+    return $self->_save_data( $key, $incrby );
 }
 
 sub _parse_args_to_get {
@@ -165,6 +165,12 @@ sub _get_ts_range {
     return @ts_args;
 }
 
+sub _get_data {
+    my ( $self, $key ) = @_;
+    my $redis = $self->_redis_conn;
+    return $redis->get($key) if $redis->exists($key);
+}
+
 sub get {
     my ( $self, @args ) = @_;
     my ( $collection, $counter, @names ) = $self->_parse_args_to_get(@args);
@@ -180,8 +186,8 @@ sub get {
     foreach my $ts_item (@ts_args) {
         my $period_key = $self->_get_period_key($collection);
         my $period     = $self->_find_period_key( $period_key, $ts_item );
-        my $nkey       = $self->_make_key_name( $collection, $period, @argr );
-        my $ret        = $redis->get($nkey);
+        my $key        = $self->_make_key_name( $collection, $period, @argr );
+        my $ret        = $self->_get_data($key);
         $count += $ret if looks_like_number($ret);
     }
     return $count;
