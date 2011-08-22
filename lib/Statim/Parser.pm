@@ -18,6 +18,11 @@ sub do {
     my @args = split( ' ', $message );
 
     my $cmd = shift(@args);
+
+    foreach my $item (@args) {
+        return () unless $item =~ /^[A-Za-z0-9\:\*\-]*$/;
+    }
+
     return () unless grep {/$cmd/} @valid_cmds;
     return ( $cmd, @args );
 
