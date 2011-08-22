@@ -7,5 +7,6 @@ requires 'AnyEvent';
 requires 'IO::Socket::INET';
 requires 'Config::JSON';
 requires 'Redis';
+requires 'Scalar::Util';
 
 WriteAll;
