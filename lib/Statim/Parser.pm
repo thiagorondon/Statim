@@ -21,6 +21,8 @@ sub do {
 
     foreach my $item (@args) {
         return () unless $item =~ /^[A-Za-z0-9\:\*\-]*$/;
+        return () if $item =~ /:$/;
+        return () if $item =~ /-$/;
     }
 
     return () unless grep {/$cmd/} @valid_cmds;

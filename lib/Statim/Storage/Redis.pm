@@ -6,6 +6,7 @@ use warnings;
 use Switch;
 use DateTime;
 use POSIX qw(floor);
+use Scalar::Util qw(looks_like_number);
 
 ## This code is hardcoded a lot.
 ## Use the same redis connection per class ?
@@ -45,23 +46,21 @@ sub _check_collection {
 
 sub _redis_conn {
     my $self = shift;
-    if ( !$rconn ) {
-        $rconn = Redis->new( server => $self->redis_server );
-    }
+    $rconn = Redis->new( server => $self->redis_server ) unless $rconn;
     return $rconn;
 }
 
 sub _make_key_name {
     my $self = shift;
     my ( $collection, $ts, @ns ) = @_;
-    return join( '_-', grep { $_ } @_ ) if $ts;
-    return join( '_-', $collection, grep { $_ } @ns );
+    return join( '_-', grep {$_} @_ ) if $ts;
+    return join( '_-', $collection, grep {$_} @ns );
 }
 
 sub _parse_args_to_add {
     my ( $self, $collection, @args ) = @_;
 
-    my ( $ns_count, $ns_count_n, %data );
+    my ( $counter, $counter_n, %data );
 
     foreach my $field ( keys $conf->{$collection}->{fields} ) {
         my $type = $conf->{$collection}->{fields}->{$field};
@@ -73,11 +72,11 @@ sub _parse_args_to_add {
 
             switch ($type) {
                 case /enum/ { $data{$field} = $value }
-                case /count/ { $ns_count = $field; $ns_count_n = $value }
+                case /count/ { $counter = $field; $counter_n = $value }
             }
         }
     }
-    return ( $ns_count, $ns_count_n, %data );
+    return ( $counter, $counter_n, %data );
 }
 
 sub _get_ts {
@@ -93,15 +92,10 @@ sub _get_ts {
 }
 
 sub _save_data {
-    my ( $self, $redis, $nkey, $ns_count, $ns_count_n, %data ) = @_;
-
-    if ( $redis->exists($nkey) ) {
-        return $redis->incrby( $nkey, $ns_count_n );
-    }
-    else {
-        $redis->set( $nkey, $ns_count_n );
-        return $ns_count_n;
-    }
+    my ( $self, $redis, $key, $incrby ) = @_;
+    return $redis->incrby( $key, $incrby ) if $redis->exists($key);
+    $redis->set( $key, $incrby );
+    return $incrby;
 }
 
 sub _arrange_key_by_hash {
@@ -118,34 +112,32 @@ sub add {
 
     return "-no collection" unless $self->_check_collection($collection);
 
-    my $redis = $self->_redis_conn;
-    my $ts    = $self->_get_ts(@args);
+    my $redis      = $self->_redis_conn;
+    my $ts         = $self->_get_ts(@args);
+    my $period_key = $self->_get_period_key($collection);
+    my $period     = $self->_find_period_key( $period_key, $ts );
 
-    my $ekey =
-      $self->_find_period_key( $self->_get_period_key($collection), $ts );
+    my ( $counter, $incrby, %data ) = $self->_parse_args_to_add( $collection, @args );
 
-    my ( $ns_count, $ns_count_n, %data ) =
-      $self->_parse_args_to_add( $collection, @args );
+    my @keys = $self->_arrange_key_by_hash(%data);
+    my $key = $self->_make_key_name( $collection, $period, @keys );
 
-    my @ns_dt = $self->_arrange_key_by_hash(%data);
-
-    my $nkey = $self->_make_key_name( $collection, $ekey, @ns_dt );
-    return $self->_save_data( $redis, $nkey, $ns_count, $ns_count_n, %data );
+    return $self->_save_data( $redis, $key, $incrby );
 }
 
 sub _parse_args_to_get {
     my ( $self, @names ) = @_;
     my $collection = shift(@names);
-    my $ns_count   = pop(@names);
-    return ( $collection, $ns_count, grep { !/ts:/ } @names );
+    my $counter    = pop(@names);
+    return ( $collection, $counter, grep { !/ts:/ } @names );
 }
 
 sub _arrange_key_by_array {
-    my ( $self, $ns_count, @args ) = @_;
+    my ( $self, $counter, @args ) = @_;
     my @ret;
     foreach my $item ( sort @args ) {
         my ( $name, $value ) = split( ':', $item );
-        next if $name eq 'ts' or $name eq $ns_count;
+        next if $name eq 'ts' or $name eq $counter;
         next unless $name;
         push( @ret, $name, $value );
     }
@@ -175,23 +167,22 @@ sub _get_ts_range {
 
 sub get {
     my ( $self, @args ) = @_;
-    my ( $collection, $ns_count, @names ) = $self->_parse_args_to_get(@args);
+    my ( $collection, $counter, @names ) = $self->_parse_args_to_get(@args);
 
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts      = $self->_get_ts(@args);
-    my @argr    = $self->_arrange_key_by_array( $ns_count, @names );
+    my @argr    = $self->_arrange_key_by_array( $counter, @names );
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $redis   = $self->_redis_conn;
     my $count   = 0;
 
     foreach my $ts_item (@ts_args) {
-        my $ekey =
-          $self->_find_period_key( $self->_get_period_key($collection),
-            $ts_item );
-        my $nkey = $self->_make_key_name( $collection, $ekey, @argr );
-        my $ret = $redis->get($nkey);
-        $count += $ret if $ret;
+        my $period_key = $self->_get_period_key($collection);
+        my $period     = $self->_find_period_key( $period_key, $ts_item );
+        my $nkey       = $self->_make_key_name( $collection, $period, @argr );
+        my $ret        = $redis->get($nkey);
+        $count += $ret if looks_like_number($ret);
     }
     return $count;
 }

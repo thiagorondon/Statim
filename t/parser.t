@@ -1,5 +1,5 @@
 
-use Test::More tests => 10;
+use Test::More tests => 12;
 
 use_ok('Statim::Parser');
 
@@ -13,6 +13,8 @@ is_deeply( [ $parser->do('get collection num ts:1-2') ],     [ 'get', 'collectio
 is_deeply( [ $parser->do('version') ], ['version'] );
 is_deeply( [ $parser->do('quit') ],    ['quit'] );
 
+is( $parser->do('get collection foo ts:1-'),    undef );
+is( $parser->do('add collection foo:'),         undef );
 is( $parser->do('add collection? foo:! num:1'), undef );
 is( $parser->do('XPTO'),                        undef );
 is( $parser->do('xpto 1'),                      undef );
