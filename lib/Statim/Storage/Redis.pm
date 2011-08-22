@@ -59,7 +59,7 @@ sub _make_key_name {
 sub _parse_args_to_add {
     my ( $self, $collection, @args ) = @_;
 
-    my ( $counter, $counter_n, %data );
+    my ( $counter, $incrby, %data );
 
     foreach my $field ( keys $conf->{$collection}->{fields} ) {
         my $type = $conf->{$collection}->{fields}->{$field};
@@ -71,11 +71,11 @@ sub _parse_args_to_add {
 
             switch ($type) {
                 case /enum/ { $data{$field} = $value }
-                case /count/ { $counter = $field; $counter_n = $value }
+                case /count/ { $counter = $field; $incrby = $value }
             }
         }
     }
-    return ( $counter, $counter_n, %data );
+    return ( $counter, $incrby, %data );
 }
 
 sub _get_ts {
@@ -167,7 +167,9 @@ sub _get_ts_range {
 sub _get_data {
     my ( $self, $key ) = @_;
     my $redis = $self->_redis_conn;
-    return $redis->get($key) if $redis->exists($key);
+    my $count = 0;
+    map { $count += $redis->get($_) } $redis->keys($key);
+    return $count;
 }
 
 sub get {
