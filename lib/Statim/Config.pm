@@ -2,6 +2,7 @@
 package Statim::Config;
 
 use Config::JSON;
+use List::Util qw(first);
 
 sub new {
     my $class = shift;
@@ -9,6 +10,15 @@ sub new {
     bless $self, $class;
     return $self;
 }
+
+sub file {
+    my $self = shift;
+
+    my $filename = first { $_ and -f $_ } ($ENV{'STATIM_CONFIG'}, 'etc/config.json', '/etc/statim/config.json');
+    die "error: we cant find config file" unless $filename;
+    return $filename;
+}
+
 
 sub get {
     my ($self, $filename) = @_;

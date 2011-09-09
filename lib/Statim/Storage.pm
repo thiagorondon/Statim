@@ -8,10 +8,10 @@ use DateTime;
 use POSIX qw(floor);
 use Scalar::Util qw(looks_like_number);
 
-use Statim::Config;
+use Statim::Schema;
 
-my $config = Statim::Config->new;
-my $conf   = $config->get('etc/config.json');
+my $schema = Statim::Schema->new;
+my $conf = $schema->get;
 
 sub new {
     my ( $class, $self ) = @_;
