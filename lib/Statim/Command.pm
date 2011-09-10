@@ -24,11 +24,13 @@ sub _storage {
 
 sub add {
     my $self = shift;
+    return '+parser' unless scalar(@_) > 1;
     return $self->_storage->add( @_ );
 }
 
 sub get {
     my $self = shift;
+    return '+parser' unless scalar(@_) > 1;
     return $self->_storage->get( @_ );
 }
 

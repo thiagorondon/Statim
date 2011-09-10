@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 1;
+use Test::More tests => 3;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -32,6 +32,17 @@ test_tcp(
         print {$sock} "\n";
         my $res = <$sock>;
         is $res, "CLIENT ERROR parser\r\n";
+
+        note "add without args";
+        print {$sock} "add collection\n";
+        $res = <$sock>;
+        is $res, "CLIENT ERROR parser\r\n";
+
+        note "get without args";
+        print {$sock} "get collection\n";
+        $res = <$sock>;
+        is $res, "CLIENT ERROR parser\r\n";
+
 
         note "finalize";
         print {$sock} "quit\n";
