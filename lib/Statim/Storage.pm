@@ -35,6 +35,7 @@ sub _get_period_key {
 
 sub _check_collection {
     my ( $self, $collection ) = @_;
+    return 0 unless $collection;
     return defined( $conf->{$collection}->{fields} ) ? 1 : 0;
 }
 
