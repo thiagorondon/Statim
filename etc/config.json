@@ -5,7 +5,7 @@
 			"foo" : "count",
 			"bar" : "enum",
             		"jaz" : "enum"
-		},
+		}
 	}
 }
 
