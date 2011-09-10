@@ -52,7 +52,7 @@ sub do {
         }
     );
 
-    my $cmd = shift(@ARGV);
+    my $cmd = shift(@ARGV) or &help;
     my $res = $client->$cmd(@ARGV);
     print $res;
 
