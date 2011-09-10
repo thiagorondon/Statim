@@ -9,28 +9,76 @@ use lib "$Bin/../lib/";
 use Statim::Runner;
 use Statim::Engine::AnyEvent;
 use Statim::Storage::Redis;
+use Getopt::Long;
 
-my $host = undef;
-my $port = 12345;
-
+my $host       = undef;
+my $port       = 12345;
 my $redis_host = '127.0.0.1';
 my $redis_port = '6379';
+my $action;
+my $config;
 
-my $storage = Statim::Storage::Redis->new({
-    redis_host => $redis_host,
-    redis_port => $redis_port
-});
+sub parse_options {
+    Getopt::Long::GetOptions(
+        'h|help' => sub { $action = 'help' },
+        'host=s' => \$host,
+        'port=i' => \$port,
+        'c|config=s' => \$config,
+    );
 
-my $engine = Statim::Engine::AnyEvent->new(
-    { host => $host,
-      port => $port 
+}
+
+sub help {
+    print <<EOF;
+Usage: $0 [options] ...
+
+Options:
+    -h,--help     show this help
+    --host        set statim server host
+    --port        set statim server port
+    -c,--config   set statim config file path
+
+Examples:
+                 
+    $0 --host 127.0.0.1 --port 12345 -c ~/my-statim/config.json
+
+EOF
+    exit(0);
+}
+
+sub do {
+
+    if ($action) {
+        &help;
     }
-);
 
-my $app = Statim::Runner->new({ 
-        storage => $storage,
-        engine => $engine
-    });
+    $ENV{'STATIM_CONFIG'} = $config if $config;
 
-$app->run;
+    my $storage = Statim::Storage::Redis->new(
+        {
+            redis_host => $redis_host,
+            redis_port => $redis_port
+        }
+    );
 
+    my $engine = Statim::Engine::AnyEvent->new(
+        {
+            host => $host,
+            port => $port
+        }
+    );
+
+    my $app = Statim::Runner->new(
+        {
+            storage => $storage,
+            engine  => $engine
+        }
+    );
+
+    $app->run;
+}
+
+unless (caller) {
+    &parse_options;
+    &do;
+}
