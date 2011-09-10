@@ -1,5 +1,5 @@
 
-use Test::More tests => 3;
+use Test::More tests => 5;
 use_ok('Statim::Config');
 use File::Temp qw/ tempfile /;
 
@@ -37,4 +37,8 @@ is_deeply(
         }
     }
 );
+
+isnt($config->file, $filename);
+$ENV{'STATIM_CONFIG'} = $filename;
+is($config->file, $filename);
 
