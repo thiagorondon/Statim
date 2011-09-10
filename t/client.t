@@ -35,19 +35,19 @@ test_tcp(
         is $res, 'OK ' . $Statim::VERSION . "\r\n";
 
         note "simple add 1";
-        $res = $client->add( 'collection', 'bar:foo', 'foo:1' );
+        $res = $client->add( 'collection', 'bar:foo', 'jaz:boo', 'foo:1' );
         is $res, "OK 1\r\n";
 
         note "simple add 3";
-        $res = $client->add( 'collection', 'bar:foo', 'foo:3' );
+        $res = $client->add( 'collection', 'bar:foo', 'jaz:boo', 'foo:3' );
         is $res, "OK 4\r\n";
 
         note "simple add 0";
-        $res = $client->add( 'collection', 'bar:foo', 'foo:0' );
+        $res = $client->add( 'collection', 'bar:foo', 'jaz:boo', 'foo:0' );
         is $res, "OK 4\r\n";
 
         note "simple get";
-        $res = $client->get( 'collection', 'bar:foo', 'foo' );
+        $res = $client->get( 'collection', 'bar:foo', 'jaz:boo', 'foo' );
         is $res, "OK 4\r\n";
 
         note "finalize";

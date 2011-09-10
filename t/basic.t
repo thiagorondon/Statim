@@ -9,7 +9,19 @@ use Test::Statim::Runner;
 use Statim;
 
 use Test::Statim::Config;
-my $config = test_statim_gen_config;
+my $config = test_statim_gen_config(
+'
+{ 
+    "collection" : {
+        "period" : "84600",
+        "fields" : {
+            "foo" : "count",
+            "bar" : "enum",
+        }
+    }
+}
+');
+
 $ENV{'STATIM_CONFIG'} = $config;
 
 test_tcp(

@@ -28,32 +28,32 @@ test_tcp(
         ) or die "Cannot open client socket: $!";
 
         note "simple add enum:test1";
-        print {$sock} 'add collection bar:test1 foo:1';
+        print {$sock} 'add collection bar:test1 jaz:boo foo:1';
         my $res = <$sock>;
         is $res, "OK 1\r\n";
 
         note "simple add enum:test2";
-        print {$sock} 'add collection bar:test2 foo:3';
+        print {$sock} 'add collection bar:test2 jaz:boo foo:3';
         $res = <$sock>;
         is $res, "OK 3\r\n";
 
         note "simple get enum:test1";
-        print {$sock} 'get collection bar:test1 foo';
+        print {$sock} 'get collection bar:test1 jaz:boo foo';
         $res = <$sock>;
         is $res, "OK 1\r\n";
 
         note "simple get enum:test2";
-        print {$sock} 'get collection bar:test2 foo';
+        print {$sock} 'get collection bar:test2 jaz:boo foo';
         $res = <$sock>;
         is $res, "OK 3\r\n";
 
         note "simple get enum:*";
-        print {$sock} 'get collection bar:* foo';
+        print {$sock} 'get collection bar:* jaz:* foo';
         $res = <$sock>;
         is $res, "OK 4\r\n";
 
         note "simple get enum:test*";
-        print {$sock} 'get collection bar:test* foo';
+        print {$sock} 'get collection bar:test* jaz:boo foo';
         $res = <$sock>;
         is $res, "OK 4\r\n";
 

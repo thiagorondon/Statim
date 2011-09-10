@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 3;
+use Test::More tests => 4;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -43,6 +43,10 @@ test_tcp(
         $res = <$sock>;
         is $res, "CLIENT ERROR parser\r\n";
 
+        note "add without all vars";
+        print {$sock} 'add collection bar:jaz foo:1';
+        $res = <$sock>;
+        is $res, "CLIENT ERROR missing args\r\n";
 
         note "finalize";
         print {$sock} "quit\n";

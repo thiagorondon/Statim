@@ -10,6 +10,8 @@ use Scalar::Util qw(looks_like_number);
 
 use Statim::Schema;
 
+# TODO: Split Storage // Schema checks.
+
 our $conf;
 
 sub new {
@@ -43,21 +45,28 @@ sub _parse_args_to_add {
     my ( $self, $collection, @args ) = @_;
 
     my ( $counter, $incrby, %data );
+    my $declare_args = 0;
+    my @fields = keys $conf->{$collection}->{fields};
 
-    foreach my $field ( keys $conf->{$collection}->{fields} ) {
+    foreach my $field ( @fields ) {
         my $type = $conf->{$collection}->{fields}->{$field};
-        next unless $type eq 'enum' or $type eq 'count';
+        return '+wrong declare field type'
+            unless $type eq 'enum' or $type eq 'count'; #schema error
 
         foreach my $arg (@args) {
             my ( $var, $value ) = split( /:/, $arg );
             next unless $var eq $field;
+            $declare_args++;
 
             switch ($type) {
                 case /enum/ { $data{$field} = $value }
                 case /count/ { $counter = $field; $incrby = $value }
+                # TODO: Add default -> schema error ?
             }
         }
     }
+
+    return '+missing args' unless $declare_args == scalar(@fields); 
     return ( $counter, $incrby, %data );
 }
 
@@ -139,6 +148,8 @@ sub add {
     my $period     = $self->_find_period_key( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) = $self->_parse_args_to_add( $collection, @args );
+
+    return $counter if $counter and $counter =~ /^\+/; # errors about parse args.
 
     my @keys = $self->_arrange_key_by_hash(%data);
     my $key = $self->_make_key_name( $collection, $period, @keys );
