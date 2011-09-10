@@ -8,5 +8,10 @@ requires 'IO::Socket::INET';
 requires 'Config::JSON';
 requires 'Redis';
 requires 'Scalar::Util';
+requires 'Class::Data::Inheritable';
+requires 'List::Util'; 
+
+requires 'Test::More';
+requires 'Test::Exception';
 
 WriteAll;
