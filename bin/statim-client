@@ -34,7 +34,7 @@ Options:
 
 Examples:
    
-   statim-client.pl add collection foo:bar count:1
+   $0 add collection foo:bar count:1
 
 EOF
     exit(0);
