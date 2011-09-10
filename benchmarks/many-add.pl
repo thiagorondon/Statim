@@ -16,28 +16,34 @@ use Statim;
 my $port = empty_port();
 
 my $pid = fork();
+my @opts = (qw/foo jaz buz toc/);
 
 if ( $pid > 0 ) {
     sleep(2);
+    print "start clients\n";
     my $sock = IO::Socket::INET->new(
         PeerPort => $port,
         PeerAddr => '127.0.0.1',
         Proto    => 'tcp'
     ) or die "Cannot open client socket: $!";
 
-    my $count = 1000;
+    my $count = 10000;
     my $t     = timeit(
         $count => sub {
-            print {$sock} 'add collection1 bar:foo foo:1';
+            my $val = $opts[int(rand(scalar(@opts)))];
+            my $val_count = int(rand(10));
+            print {$sock} "add collection1 bar:$val foo:$val_count";
             my $res = <$sock>;
         }
     );
 
     print "$count loops of other code took:", timestr($t), "\n";
 
-    print {$sock} 'get collection1 bar foo';
-    my $res = <$sock>;
-    warn "$res";
+    foreach my $item (@opts) {
+        print {$sock} "get collection1 bar:$item foo";
+        my $res = <$sock>;
+        warn "$res";
+    }
 
     kill 9, $pid;
     wait;
