@@ -9,6 +9,10 @@ use Test::Statim::Runner;
 
 use Statim;
 
+use Test::Statim::Config;
+my $config = test_statim_gen_config;
+$ENV{'STATIM_CONFIG'} = $config;
+
 test_tcp(
     server => sub {
         my $port = shift;

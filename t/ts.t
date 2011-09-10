@@ -9,6 +9,10 @@ use Test::Statim::Runner;
 
 use Statim;
 
+use Test::Statim::Config;
+my $config = test_statim_gen_config;
+$ENV{'STATIM_CONFIG'} = $config;
+
 test_tcp(
     server => sub {
         my $port = shift;
@@ -25,27 +29,27 @@ test_tcp(
         ) or die "Cannot open client socket: $!";
 
         note "simple add 1";
-        print {$sock} 'add collection1 bar:str jaz:ing ts:1313812776 foo:1';
+        print {$sock} 'add collection bar:str jaz:ing ts:1313812776 foo:1';
         my $res = <$sock>;
         is $res, "OK 1\r\n";
 
         note "simple add 3";
-        print {$sock} 'add collection1 jaz:ing bar:str ts:1313012776 foo:1';
+        print {$sock} 'add collection jaz:ing bar:str ts:1313012776 foo:1';
         $res = <$sock>;
         is $res, "OK 1\r\n";
 
         note "simple add 0";
-        print {$sock} 'add collection1 bar:str jaz:ing ts:1313812776 foo:1';
+        print {$sock} 'add collection bar:str jaz:ing ts:1313812776 foo:1';
         $res = <$sock>;
         is $res, "OK 2\r\n";
 
         note "simple get";
-        print {$sock} 'get collection1 bar:str jaz:ing ts:1313812776 foo';
+        print {$sock} 'get collection bar:str jaz:ing ts:1313812776 foo';
         $res = <$sock>;
         is $res, "OK 2\r\n";
 
         note "simple get";
-        print {$sock} 'get collection1 bar:str jaz:ing ts:13136111-1313812776 foo';
+        print {$sock} 'get collection bar:str jaz:ing ts:13136111-1313812776 foo';
         $res = <$sock>;
         is $res, "OK 3\r\n";
 

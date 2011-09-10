@@ -10,13 +10,16 @@ use Scalar::Util qw(looks_like_number);
 
 use Statim::Schema;
 
-my $schema = Statim::Schema->new;
-my $conf = $schema->get;
+our $conf;
 
 sub new {
     my ( $class, $self ) = @_;
     $self = {} unless defined $self;
     bless $self, $class;
+    
+    my $schema = Statim::Schema->new;
+    $conf = $schema->get;
+    
     return $self;
 }
 
