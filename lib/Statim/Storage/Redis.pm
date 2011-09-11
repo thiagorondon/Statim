@@ -22,6 +22,12 @@ sub _redis_conn {
     return $rconn;
 }
 
+sub _get_possible_keys {
+    my ( $self, $key ) = @_;
+    my $redis = $self->_redis_conn;
+    return $redis->keys("$key");
+}
+
 sub _save_data {
     my ( $self, $key, $incrby ) = @_;
     my $redis = $self->_redis_conn;

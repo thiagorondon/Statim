@@ -7,10 +7,11 @@ use Switch;
 use DateTime;
 use POSIX qw(floor);
 use Scalar::Util qw(looks_like_number);
+use List::MoreUtils qw(uniq distinct);
 
 use Statim::Schema;
 
-# TODO: Split Storage // Schema checks.
+# TODO: Split Storage // Schema checks // Storage::Engine.
 
 our $conf;
 
@@ -18,10 +19,10 @@ sub new {
     my ( $class, $self ) = @_;
     $self = {} unless defined $self;
     bless $self, $class;
-    
+
     my $schema = Statim::Schema->new;
     $conf = $schema->get;
-    
+
     return $self;
 }
 
@@ -46,12 +47,13 @@ sub _parse_args_to_add {
 
     my ( $counter, $incrby, %data );
     my $declare_args = 0;
-    my @fields = keys $conf->{$collection}->{fields};
+    my @fields       = keys $conf->{$collection}->{fields};
 
-    foreach my $field ( @fields ) {
+    foreach my $field (@fields) {
         my $type = $conf->{$collection}->{fields}->{$field};
         return '+wrong declare field type'
-            unless $type eq 'enum' or $type eq 'count'; #schema error
+          unless $type eq 'enum'
+              or $type eq 'count';    #schema error
 
         foreach my $arg (@args) {
             my ( $var, $value ) = split( /:/, $arg );
@@ -61,12 +63,13 @@ sub _parse_args_to_add {
             switch ($type) {
                 case /enum/ { $data{$field} = $value }
                 case /count/ { $counter = $field; $incrby = $value }
+
                 # TODO: Add default -> schema error ?
             }
         }
     }
 
-    return '+missing args' unless $declare_args == scalar(@fields); 
+    return '+missing args' unless $declare_args == scalar(@fields);
     return ( $counter, $incrby, %data );
 }
 
@@ -135,8 +138,8 @@ sub _get_ts_range {
 sub _make_key_name {
     my $self = shift;
     my ( $collection, $ts, @ns ) = @_;
-    return join( '_-', grep {$_} @_ ) if $ts;
-    return join( '_-', $collection, grep {$_} @ns );
+    return join( '_-', grep { $_ } @_ ) if $ts;
+    return join( '_-', $collection, grep { $_ } @ns );
 }
 
 sub add {
@@ -148,14 +151,58 @@ sub add {
     my $period_key = $self->_get_period_key($collection);
     my $period     = $self->_find_period_key( $period_key, $ts );
 
-    my ( $counter, $incrby, %data ) = $self->_parse_args_to_add( $collection, @args );
+    my ( $counter, $incrby, %data ) =
+      $self->_parse_args_to_add( $collection, @args );
 
-    return $counter if $counter and $counter =~ /^\+/; # errors about parse args.
+    return $counter
+      if $counter and $counter =~ /^\+/;    # errors about parse args.
 
     my @keys = $self->_arrange_key_by_hash(%data);
     my $key = $self->_make_key_name( $collection, $period, @keys );
 
     return $self->_save_data( $key, $incrby );
+}
+
+sub get_key_value {
+
+    #my ( $self, $collection, @args ) = @_;
+    #my $key = $self->_make_key_name( $collection, @args );
+    #my $ret = $self->_get_data($key);
+    my ( $self, $key ) = @_;
+    my $ret = $self->_get_data($key);
+
+    return looks_like_number($ret) ? $ret : 0;
+}
+
+sub get_all_possible_keys {
+    my ( $self, $collection, $ts, @argr ) = @_;
+
+    my @fields = keys $conf->{$collection}->{fields};
+    my @ns;
+
+    foreach my $item ( sort @fields ) {
+        my $type = $conf->{$collection}->{fields}->{$item};
+        next if $type eq 'count';
+
+        my ($has_item) = grep { /^$item:/ } @argr;
+
+        my $item_key;
+        if ($has_item) {
+            my ( $argr_name, $argr_value );
+            ( $argr_name, $argr_value ) = split( ':', $has_item );
+
+            $item_key = join( '_-', $argr_name, $argr_value );
+        }
+        else {
+            $item_key = join( '_-', $item, '*' );
+        }
+
+        push( @ns, $item_key );
+    }
+
+    my $key = join( '_-', $collection, $ts, sort @ns );
+    my @ps = $self->_get_possible_keys($key);
+    return @ps;
 }
 
 sub get {
@@ -167,16 +214,20 @@ sub get {
     my $ts      = $self->_get_ts(@args);
     my @argr    = $self->_arrange_key_by_array( $counter, @names );
     my @ts_args = $self->_get_ts_range( $collection, $ts );
-    my $redis   = $self->_redis_conn;
     my $count   = 0;
 
     foreach my $ts_item (@ts_args) {
         my $period_key = $self->_get_period_key($collection);
-        my $period     = $self->_find_period_key( $period_key, $ts_item );
-        my $key        = $self->_make_key_name( $collection, $period, @argr );
-        my $ret        = $self->_get_data($key);
-        $count += $ret if looks_like_number($ret);
+        my $period = $self->_find_period_key( $period_key, $ts_item );
+
+        my @ps = $self->get_all_possible_keys( $collection, $period, @names );
+        foreach my $item (@ps) {
+            $count += $self->get_key_value($item);
+        }
+
+        #$count += $self->get_key_value( $collection, $period, @argr );
     }
+
     return $count;
 }
 
