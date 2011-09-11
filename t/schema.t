@@ -1,5 +1,5 @@
 
-use Test::More tests => 8;
+use Test::More tests => 9;
 use Test::Exception;
 
 use_ok('Statim::Schema');
@@ -22,7 +22,7 @@ my $schema = Statim::Schema->new;
 {
     my $data = &get_schema;
     is_deeply( $schema->data($data), $data, 'schema::data return' );
-    is_deeply( $schema->get,              $data, 'schema::get return' );
+    is_deeply( $schema->get,         $data, 'schema::get return' );
 }
 
 {
@@ -50,7 +50,8 @@ my $schema = Statim::Schema->new;
     my $sc = &get_schema;
     $sc->{collection}->{period} = 'other';
     $schema->data($sc);
-    throws_ok { $schema->get } qr/positive integer/, 'with string (other) period';
+    throws_ok { $schema->get } qr/positive integer/,
+      'with string (other) period';
 }
 
 {
@@ -65,8 +66,5 @@ my $schema = Statim::Schema->new;
     $sc->{collection}->{fields}->{test} = 'count';
     $schema->data($sc);
     throws_ok { $schema->get } qr/one count/, 'with two counts';
-
 }
-
-
 
