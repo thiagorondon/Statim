@@ -101,6 +101,8 @@ sub _parse_args_to_get {
 sub _arrange_key_by_array {
     my ( $self, $counter, @args ) = @_;
     my @ret;
+
+    my @fields = keys $conf->{$collection}->{fields};
     foreach my $item ( sort @args ) {
         my ( $name, $value ) = split( ':', $item );
         next if $name eq 'ts' or $name eq $counter;

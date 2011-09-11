@@ -4,57 +4,69 @@ use Test::Exception;
 
 use_ok('Statim::Schema');
 
-my $df_schema = {
-    'collection' => {
-        'fields' => {
-            'jaz' => 'enum',
-            'bar' => 'enum',
-            'foo' => 'count'
-        },
-        'period' => '84600'
-    }
-};
+sub get_schema {
+    {
+        'collection' => {
+            'fields' => {
+                'jaz' => 'enum',
+                'bar' => 'enum',
+                'foo' => 'count'
+            },
+            'period' => '84600'
+        }
+    };
+}
 
 my $schema = Statim::Schema->new;
 
 {
-    is_deeply( $schema->data($df_schema), $df_schema, 'schema::data return' );
-    is_deeply( $schema->get,              $df_schema, 'schema::get return' );
+    my $data = &get_schema;
+    is_deeply( $schema->data($data), $data, 'schema::data return' );
+    is_deeply( $schema->get,              $data, 'schema::get return' );
 }
 
 {
-    my $sc = $df_schema;
+    my $sc = &get_schema;
     delete( $sc->{collection}->{period} );
     $schema->data($sc);
-    dies_ok { $schema->get } 'without period';
+    throws_ok { $schema->get } qr/define period/, 'without period';
 }
 
 {
-    my $sc = $df_schema;
+    my $sc = &get_schema;
     delete( $sc->{collection}->{fields} );
     $schema->data($sc);
-    dies_ok { $schema->get } 'without fields';
+    throws_ok { $schema->get } qr/define fields/, 'without fields';
 }
 
 {
-    my $sc = $df_schema;
+    my $sc = &get_schema;
     $sc->{collection}->{fields}->{test} = 'other';
     $schema->data($sc);
-    dies_ok { $schema->get } 'with wrong field type';
+    throws_ok { $schema->get } qr/enum or count/, 'with wrong field type';
 }
 
 {
-    my $sc = $df_schema;
+    my $sc = &get_schema;
     $sc->{collection}->{period} = 'other';
     $schema->data($sc);
-    dies_ok { $schema->get } 'with string (other) period';
+    throws_ok { $schema->get } qr/positive integer/, 'with string (other) period';
 }
 
 {
-    my $sc = $df_schema;
+    my $sc = &get_schema;
     $sc->{collection}->{period} = -1;
     $schema->data($sc);
-    dies_ok { $schema->get } 'with negative number';
+    throws_ok { $schema->get } qr/positive integer/, 'with negative number';
 }
+
+{
+    my $sc = &get_schema;
+    $sc->{collection}->{fields}->{test} = 'count';
+    $schema->data($sc);
+    throws_ok { $schema->get } qr/one count/, 'with two counts';
+
+}
+
 
 

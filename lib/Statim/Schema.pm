@@ -21,7 +21,7 @@ sub data {
 
     $self->_data(@_) if @_;
     return $self->_data if $self->_data;
-    
+
     my $config = Statim::Config->new;
     my $conf   = $config->get( $config->file );
     $self->_data($conf);
@@ -33,6 +33,9 @@ sub get {
     my $conf = $self->data;
 
     my @collections;
+
+    my $field_count = 0;
+    my $field_enum  = 0;
 
     foreach my $item ( keys $conf ) {
 
@@ -46,11 +49,19 @@ sub get {
           unless $period =~ /^\d+$/;
 
         foreach my $field ( keys $conf->{$item}->{fields} ) {
+            my $type = $conf->{$item}->{fields}->{$field};
+
             die "The field [$field]  must be enum or count"
-              unless $conf->{$item}->{fields}->{$field} =~ /^(enum|count)$/;
+              unless $type =~ /^(enum|count)$/;
+
+            $field_count++ if $type eq 'count';
+            $field_enum++  if $type eq 'enum';
+
         }
 
     }
+
+    die "You must defined one count field" unless $field_count == 1;
 
     return $conf;
 }
