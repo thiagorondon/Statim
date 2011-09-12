@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 8;
+use Test::More tests => 10;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -78,6 +78,16 @@ test_tcp(
         print {$sock} 'get collection foo';
         $res = <$sock>;
         is $res, "OK 5\r\n";
+
+        note "simple del";
+        print {$sock} 'del collection bar:boo foo';
+        $res = <$sock>;
+        is $res, "OK 1\r\n";
+
+        note "simple del (again)";
+        print {$sock} 'del collection bar:boo foo';
+        $res = <$sock>;
+        is $res, "SERVER ERROR not exist\r\n";
 
         note "finalize";
         print {$sock} "quit\r\n";

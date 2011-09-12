@@ -4,7 +4,7 @@ package Statim::Parser;
 use strict;
 use warnings;
 
-our @valid_cmds = ( 'add', 'get', 'version', 'quit' );
+our @valid_cmds = ( 'add', 'get', 'del', 'version', 'quit' );
 
 sub new {
     my $class = shift;

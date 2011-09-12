@@ -151,6 +151,28 @@ sub add {
     return $self->_save_data( $key, $incrby );
 }
 
+sub del {
+    my ( $self, $collection, @args ) = @_;
+
+    return "-no collection" unless $self->_check_collection($collection);
+
+    my $ts         = $self->_get_ts(@args);
+    my $period_key = $self->_get_period_key($collection);
+    my $period     = $self->_find_period_key( $period_key, $ts );
+
+    my ( $counter, $incrby, %data ) =
+      $self->_parse_args_to_add( $collection, @args );
+
+    return $counter
+      if $counter and $counter =~ /^\+/;    # errors about parse args.
+
+    my @keys = $self->_arrange_key_by_hash(%data);
+    my $key = $self->_make_key_name( $collection, $period, @keys );
+
+    return $self->_delete_key( $key ) || '-not exist';
+}
+
+
 sub _get_key_value {
     my ( $self, $key ) = @_;
     my $ret = $self->_get_data($key);

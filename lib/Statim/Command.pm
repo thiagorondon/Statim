@@ -22,6 +22,12 @@ sub _storage {
     return $self->{storage};
 }
 
+sub del {
+    my $self = shift;
+    return '+parser' unless scalar(@_) > 1;
+    return $self->_storage->del( @_ );
+}
+
 sub add {
     my $self = shift;
     return '+parser' unless scalar(@_) > 1;

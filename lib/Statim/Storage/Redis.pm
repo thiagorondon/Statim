@@ -28,6 +28,12 @@ sub _get_possible_keys {
     return $redis->keys("$key");
 }
 
+sub _delete_key {
+    my ( $self, $key ) = @_;
+    my $redis = $self->_redis_conn;
+    $redis->del( $key );
+}
+
 sub _save_data {
     my ( $self, $key, $incrby ) = @_;
     my $redis = $self->_redis_conn;
