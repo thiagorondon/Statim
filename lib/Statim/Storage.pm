@@ -6,7 +6,6 @@ use warnings;
 use DateTime;
 use POSIX qw(floor);
 use Scalar::Util qw(looks_like_number);
-use List::MoreUtils qw(uniq distinct);
 
 use Statim::Schema;
 
