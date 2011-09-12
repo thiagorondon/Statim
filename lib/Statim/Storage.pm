@@ -163,6 +163,8 @@ sub del {
     my ( $counter, $incrby, %data ) =
       $self->_parse_args_to_add( $collection, @args );
 
+    if ($incrby) {} ; # unsed var ?
+
     return $counter
       if $counter and $counter =~ /^\+/;    # errors about parse args.
 
