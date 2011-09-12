@@ -1,3 +1,11 @@
+
+package Statim::Doc::Spec;
+
+use strict;
+use warnings;
+
+1;
+
 =encoding utf-8
 
 =head1 NAME

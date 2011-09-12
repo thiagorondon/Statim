@@ -41,7 +41,8 @@ sub _accept_handler {
     my $self = shift;
 
     return sub {
-        my ( $sock, $peer_host, $peer_port ) = @_;
+        my $sock = shift;
+        #my ( $sock, $peer_host, $peer_port ) = @_;
 
         #warn "Accepted connection from $peer_host:$peer_port\n";
         return unless $sock;

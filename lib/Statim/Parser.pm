@@ -1,6 +1,9 @@
 
 package Statim::Parser;
 
+use strict;
+use warnings;
+
 our @valid_cmds = ( 'add', 'get', 'version', 'quit' );
 
 sub new {

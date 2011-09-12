@@ -32,8 +32,6 @@ sub get {
     my $self = shift;
     my $conf = $self->data;
 
-    my @collections;
-
     my $field_count = 0;
     my $field_enum  = 0;
 

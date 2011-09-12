@@ -3,7 +3,6 @@ package Statim::Storage;
 
 use strict;
 use warnings;
-use Switch;
 use DateTime;
 use POSIX qw(floor);
 use Scalar::Util qw(looks_like_number);
@@ -60,12 +59,15 @@ sub _parse_args_to_add {
             next unless $var eq $field;
             $declare_args++;
 
-            switch ($type) {
-                case /enum/ { $data{$field} = $value }
-                case /count/ { $counter = $field; $incrby = $value }
-
-                # TODO: Add default -> schema error ?
+            if ( $type eq 'enum' ) {
+                $data{$field} = $value;
             }
+            else {
+                $counter = $field;
+                $incrby  = $value;
+            }
+
+            # TODO: Add default -> schema error ?
         }
     }
 
@@ -97,21 +99,8 @@ sub _arrange_key_by_hash {
 sub _parse_args_to_get {
     my ( $self, @names ) = @_;
     my $collection = shift(@names);
-    my $counter    = pop(@names);
-    return ( $collection, $counter, grep { !/ts:/ } @names );
-}
-
-sub _arrange_key_by_array {
-    my ( $self, $counter, @args ) = @_;
-    my @ret;
-
-    foreach my $item ( sort @args ) {
-        my ( $name, $value ) = split( ':', $item );
-        next if $name eq 'ts' or $name eq $counter;
-        next unless $name;
-        push( @ret, $name, $value );
-    }
-    return @ret;
+    pop(@names);
+    return ( $collection, grep { !/ts:/ } @names );
 }
 
 sub _get_ts_range {
@@ -164,13 +153,8 @@ sub add {
 }
 
 sub get_key_value {
-
-    #my ( $self, $collection, @args ) = @_;
-    #my $key = $self->_make_key_name( $collection, @args );
-    #my $ret = $self->_get_data($key);
     my ( $self, $key ) = @_;
     my $ret = $self->_get_data($key);
-
     return looks_like_number($ret) ? $ret : 0;
 }
 
@@ -206,13 +190,12 @@ sub get_all_possible_keys {
 }
 
 sub get {
-    my ( $self, @args ) = @_;
-    my ( $collection, $counter, @names ) = $self->_parse_args_to_get(@args);
+    my ( $self,       @args )  = @_;
+    my ( $collection, @names ) = $self->_parse_args_to_get(@args);
 
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts      = $self->_get_ts(@args);
-    my @argr    = $self->_arrange_key_by_array( $counter, @names );
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $count   = 0;
 
@@ -224,8 +207,6 @@ sub get {
         foreach my $item (@ps) {
             $count += $self->get_key_value($item);
         }
-
-        #$count += $self->get_key_value( $collection, $period, @argr );
     }
 
     return $count;

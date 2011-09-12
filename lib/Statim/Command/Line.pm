@@ -1,6 +1,9 @@
 
 package Statim::Command::Line;
 
+use strict;
+use warnings;
+
 use Statim::Parser;
 use Statim::Command;
 

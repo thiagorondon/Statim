@@ -13,5 +13,6 @@ requires 'List::Util';
 
 requires 'Test::More';
 requires 'Test::Exception';
+requires 'Test::Vars';
 
 WriteAll;

@@ -1,6 +1,9 @@
 
 package Statim::Config;
 
+use strict;
+use warnings;
+
 use Config::JSON;
 use List::Util qw(first);
 
