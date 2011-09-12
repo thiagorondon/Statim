@@ -152,13 +152,13 @@ sub add {
     return $self->_save_data( $key, $incrby );
 }
 
-sub get_key_value {
+sub _get_key_value {
     my ( $self, $key ) = @_;
     my $ret = $self->_get_data($key);
     return looks_like_number($ret) ? $ret : 0;
 }
 
-sub get_all_possible_keys {
+sub _get_all_possible_keys {
     my ( $self, $collection, $ts, @argr ) = @_;
 
     my @fields = keys $conf->{$collection}->{fields};
@@ -203,9 +203,9 @@ sub get {
         my $period_key = $self->_get_period_key($collection);
         my $period = $self->_find_period_key( $period_key, $ts_item );
 
-        my @ps = $self->get_all_possible_keys( $collection, $period, @names );
+        my @ps = $self->_get_all_possible_keys( $collection, $period, @names );
         foreach my $item (@ps) {
-            $count += $self->get_key_value($item);
+            $count += $self->_get_key_value($item);
         }
     }
 
