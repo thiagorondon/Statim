@@ -34,12 +34,28 @@ sub _delete_key {
     $redis->del( $key );
 }
 
-sub _save_data {
+sub __sum_data {
     my ( $self, $key, $incrby ) = @_;
     my $redis = $self->_redis_conn;
     return $redis->incrby( $key, $incrby ) if $redis->exists($key);
     $redis->set( $key, $incrby );
     return $incrby;
+}
+
+sub __uniq_data {
+    my ( $self, $key, $incrby ) = @_;
+    my $redis = $self->_redis_conn;
+    return '+this period already have a value' if $redis->exists($key);
+    $redis->set( $key, $incrby );
+    return $incrby;
+}
+
+sub _save_data {
+    my ( $self, $key, $incrby, $aggregate ) = @_;
+    
+    return $self->__uniq_data( $key, $incrby ) if $aggregate eq 'uniq';
+
+    return $self->__sum_data( $key, $incrby );
 }
 
 sub _get_data {

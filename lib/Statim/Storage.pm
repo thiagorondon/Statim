@@ -148,7 +148,8 @@ sub add {
     my @keys = $self->_arrange_key_by_hash(%data);
     my $key = $self->_make_key_name( $collection, $period, @keys );
 
-    return $self->_save_data( $key, $incrby );
+    my $aggregate = $conf->{$collection}->{aggregate};
+    return $self->_save_data( $key, $incrby, $aggregate );
 }
 
 sub del {
