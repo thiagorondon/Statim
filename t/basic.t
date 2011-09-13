@@ -14,6 +14,7 @@ my $config = test_statim_gen_config(
 { 
     "collection" : {
         "period" : "84600",
+        "aggregate" : "sum",
         "fields" : {
             "foo" : "count",
             "bar" : "enum",

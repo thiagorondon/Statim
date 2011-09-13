@@ -37,6 +37,11 @@ sub get {
 
     foreach my $item ( keys $conf ) {
 
+        die "You must define aggregate method in [$item]"
+            unless defined( $conf->{$item}->{aggregate} );
+        die "The aggregate field must be sum or uniq"
+          unless $conf->{$item}->{aggregate} =~ /^(sum|uniq)$/;
+
         die "You must define fields in [$item]"
           unless defined( $conf->{$item}->{fields} );
 

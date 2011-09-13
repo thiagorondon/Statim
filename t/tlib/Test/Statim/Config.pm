@@ -11,6 +11,7 @@ my $df_data = <<END;
 { 
     "collection" : {
         "period" : "84600",
+        "aggregate" : "sum",
         "fields" : {
             "foo" : "count",
             "bar" : "enum",

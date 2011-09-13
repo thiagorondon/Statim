@@ -5,7 +5,8 @@
 			"foo" : "count",
 			"bar" : "enum",
             		"jaz" : "enum"
-		}
+		},
+        "aggregate" : "sum"
 	}
 }
 

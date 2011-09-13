@@ -12,7 +12,8 @@ sub get_schema {
                 'bar' => 'enum',
                 'foo' => 'count'
             },
-            'period' => '84600'
+            'period' => '84600',
+            'aggregate' => 'sum'
         }
     };
 }
