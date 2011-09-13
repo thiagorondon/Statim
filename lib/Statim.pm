@@ -22,7 +22,7 @@ a series as a whole, such as multiplying, adding, or otherwise combining
 various time series into a new time series.
 
 They can also filter on arbitraty patterns defined by the period time of
-series, high, low and avegare value filters.
+series and apply filter to get high, low and avegare value.
 
 =head1 SEE ALSO
 
