@@ -29,7 +29,7 @@ sub _find_period_key {
     return floor( $epoch / $period );
 }
 
-sub _get_period_key {
+sub _get_period {
     my ( $self, $collection ) = @_;
     return $conf->{$collection}->{period};
 }
@@ -98,14 +98,14 @@ sub _arrange_key_by_hash {
 sub _parse_args_to_get {
     my ( $self, @names ) = @_;
     my $collection = shift(@names);
-    pop(@names);
+    my $count_field = $conf->
     return ( $collection, grep { !/ts:/ } @names );
 }
 
 sub _get_ts_range {
     my ( $self, $collection, $ts ) = @_;
 
-    my $period = $self->_get_period_key( $collection, $ts );
+    my $period = $self->_get_period( $collection, $ts );
     my @ts_args;
     if ( $ts =~ /-/ ) {
         my ( $ts_ini, $ts_fim ) = split( '-', $ts );
@@ -136,7 +136,7 @@ sub add {
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts         = $self->_get_ts(@args);
-    my $period_key = $self->_get_period_key($collection);
+    my $period_key = $self->_get_period($collection);
     my $period     = $self->_find_period_key( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) =
@@ -158,7 +158,7 @@ sub del {
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts         = $self->_get_ts(@args);
-    my $period_key = $self->_get_period_key($collection);
+    my $period_key = $self->_get_period($collection);
     my $period     = $self->_find_period_key( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) =
@@ -224,7 +224,7 @@ sub get {
     my $count   = 0;
 
     foreach my $ts_item (@ts_args) {
-        my $period_key = $self->_get_period_key($collection);
+        my $period_key = $self->_get_period($collection);
         my $period = $self->_find_period_key( $period_key, $ts_item );
 
         my @ps = $self->_get_all_possible_keys( $collection, $period, @names );
