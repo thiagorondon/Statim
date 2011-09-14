@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 10;
+use Test::More tests => 11;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -79,6 +79,11 @@ test_tcp(
         print {$sock} 'get collection foo';
         $res = <$sock>;
         is $res, "OK 5\r\n";
+
+        note "simple add -1";
+        print {$sock} 'add collection bar:jaz foo:-1';
+        $res = <$sock>;
+        is $res, "OK 3\r\n";
 
         note "simple del";
         print {$sock} 'del collection bar:boo foo';
