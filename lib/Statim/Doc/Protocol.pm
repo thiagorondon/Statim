@@ -1,5 +1,5 @@
 
-package Statim::Doc::Spec;
+package Statim::Doc::Protocol;
 
 use strict;
 use warnings;
