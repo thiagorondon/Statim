@@ -251,27 +251,21 @@ sub get {
         my @ps = $self->_get_all_possible_keys( $collection, $period, @names );
 
         foreach my $item (@ps) {
+            my $value = $self->_get_key_value($item);
+            next unless $value;
+
             if ( $count_func eq 'sum' ) {
                 $count += $self->_get_key_value($item);
             }
             elsif ( $count_func eq 'min' ) {
-                my $value = $self->_get_key_value($item);
-                next unless $value;
-
                 $accessor[0] = 0 unless scalar(@accessor);
                 $count = $value if $value < $accessor[0];
             }
             elsif ( $count_func eq 'max' ) {
-                my $value = $self->_get_key_value($item);
-                next unless $value;
-
                 $accessor[0] = 0 unless scalar(@accessor);
                 $count = $value if $value > $accessor[0];
             }
             elsif ( $count_func eq 'avg' ) {
-                my $value = $self->_get_key_value($item);
-                next unless $value;
-
                 push( @accessor, $value );
             }
         }
