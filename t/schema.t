@@ -12,7 +12,7 @@ sub get_schema {
                 'bar' => 'enum',
                 'foo' => 'count'
             },
-            'period' => '84600',
+            'period'    => '84600',
             'aggregate' => 'sum'
         }
     };
@@ -67,5 +67,12 @@ my $schema = Statim::Schema->new;
     $sc->{collection}->{fields}->{test} = 'count';
     $schema->data($sc);
     throws_ok { $schema->get } qr/one count/, 'with two counts';
+}
+
+{
+    my $sc = &get_schema;
+    map { $sc->{collection}->{fields}->{"foo$_"} = 'enum' } 1 .. 256;
+    $schema->data($sc);
+    throws_ok { $schema->get } qr/0-255/, 'more than 255 fields enum';
 }
 

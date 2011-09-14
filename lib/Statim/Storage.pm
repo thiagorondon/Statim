@@ -6,6 +6,7 @@ use warnings;
 use DateTime;
 use POSIX qw(floor);
 use Scalar::Util qw(looks_like_number);
+use List::Util qw(sum);
 
 use Statim::Schema;
 
@@ -29,9 +30,18 @@ sub _find_period_key {
     return floor( $epoch / $period );
 }
 
-sub _get_period_key {
+sub _get_period {
     my ( $self, $collection ) = @_;
     return $conf->{$collection}->{period};
+}
+
+sub _get_counter {
+    my ( $self, $collection ) = @_;
+    return unless ref($conf->{$collection}->{fields}) eq 'HASH';
+    foreach my $field ( keys $conf->{$collection}->{fields} ) {
+        my $type = $conf->{$collection}->{fields}->{$field};
+        return $field if $type eq 'count';
+    }
 }
 
 sub _check_collection {
@@ -95,17 +105,27 @@ sub _arrange_key_by_hash {
     return @args;
 }
 
+# TODO: bug, we need to make sure if we dont have
+# $counter . 'bla' field, for example.
+
 sub _parse_args_to_get {
     my ( $self, @names ) = @_;
-    my $collection = shift(@names);
-    pop(@names);
-    return ( $collection, grep { !/ts:/ } @names );
+    my $collection  = shift(@names);
+    my $count_field = $self->_get_counter($collection) || '';
+    my ($count_to_parse) = $count_field ? grep { /^$count_field/ } @names : ('');
+    my ( undef, $count_func ) =
+      $count_to_parse =~ /:/
+      ? split( ':', $count_to_parse )
+      : ( $count_field, 'sum' );
+
+    return ( $collection, $count_func,
+        grep { !/^(ts:|$count_field|$count_field:)/ } @names );
 }
 
 sub _get_ts_range {
     my ( $self, $collection, $ts ) = @_;
 
-    my $period = $self->_get_period_key( $collection, $ts );
+    my $period = $self->_get_period( $collection, $ts );
     my @ts_args;
     if ( $ts =~ /-/ ) {
         my ( $ts_ini, $ts_fim ) = split( '-', $ts );
@@ -136,7 +156,7 @@ sub add {
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts         = $self->_get_ts(@args);
-    my $period_key = $self->_get_period_key($collection);
+    my $period_key = $self->_get_period($collection);
     my $period     = $self->_find_period_key( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) =
@@ -158,13 +178,14 @@ sub del {
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts         = $self->_get_ts(@args);
-    my $period_key = $self->_get_period_key($collection);
+    my $period_key = $self->_get_period($collection);
     my $period     = $self->_find_period_key( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) =
       $self->_parse_args_to_add( $collection, @args );
 
-    if ($incrby) {} ; # unsed var ?
+    if ($incrby) { }
+    ;    # unsed var ?
 
     return $counter
       if $counter and $counter =~ /^\+/;    # errors about parse args.
@@ -172,9 +193,8 @@ sub del {
     my @keys = $self->_arrange_key_by_hash(%data);
     my $key = $self->_make_key_name( $collection, $period, @keys );
 
-    return $self->_delete_key( $key ) || '-not exist';
+    return $self->_delete_key($key) || '-not exist';
 }
-
 
 sub _get_key_value {
     my ( $self, $key ) = @_;
@@ -214,22 +234,46 @@ sub _get_all_possible_keys {
 }
 
 sub get {
-    my ( $self,       @args )  = @_;
-    my ( $collection, @names ) = $self->_parse_args_to_get(@args);
-
+    my ( $self, @args ) = @_;
+    my ( $collection, $count_func, @names ) = $self->_parse_args_to_get(@args);
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts      = $self->_get_ts(@args);
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $count   = 0;
 
+    my @accessor;    # TODO: we need another way to that  !!!
+
     foreach my $ts_item (@ts_args) {
-        my $period_key = $self->_get_period_key($collection);
+        my $period_key = $self->_get_period($collection);
         my $period = $self->_find_period_key( $period_key, $ts_item );
 
         my @ps = $self->_get_all_possible_keys( $collection, $period, @names );
+
         foreach my $item (@ps) {
-            $count += $self->_get_key_value($item);
+            my $value = $self->_get_key_value($item);
+            next unless $value;
+
+            if ( $count_func eq 'sum' ) {
+                $count += $self->_get_key_value($item);
+            }
+            elsif ( $count_func eq 'min' ) {
+                $accessor[0] = 0 unless scalar(@accessor);
+                $count = $value if $value < $accessor[0];
+            }
+            elsif ( $count_func eq 'max' ) {
+                $accessor[0] = 0 unless scalar(@accessor);
+                $count = $value if $value > $accessor[0];
+            }
+            elsif ( $count_func eq 'avg' ) {
+                push( @accessor, $value );
+            }
+        }
+    }
+
+    if ( $count_func eq 'avg' ) {
+        if ( scalar(@accessor) ) {
+            $count = sum(@accessor) / scalar(@accessor);
         }
     }
 

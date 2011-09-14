@@ -38,7 +38,7 @@ sub get {
     foreach my $item ( keys $conf ) {
 
         die "You must define aggregate method in [$item]"
-            unless defined( $conf->{$item}->{aggregate} );
+          unless defined( $conf->{$item}->{aggregate} );
         die "The aggregate field must be sum or uniq"
           unless $conf->{$item}->{aggregate} =~ /^(sum|uniq)$/;
 
@@ -65,6 +65,7 @@ sub get {
     }
 
     die "You must defined one count field" unless $field_count == 1;
+    die "You must defined 0-255 enum fields" if $field_enum > 255;
 
     return $conf;
 }

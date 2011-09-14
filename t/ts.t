@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 5;
+use Test::More tests => 9;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -52,6 +52,26 @@ test_tcp(
         print {$sock} 'get collection bar:str jaz:ing ts:13136111-1313812776 foo';
         $res = <$sock>;
         is $res, "OK 3\r\n";
+
+        note "simple get with func sum";
+        print {$sock} 'get collection bar:str jaz:ing ts:13136111-1313812776 foo:sum';
+        $res = <$sock>;
+        is $res, "OK 3\r\n";
+
+        note "simple get with func min";
+        print {$sock} 'get collection bar:str jaz:ing ts:13136111-1313812776 foo:min';
+        $res = <$sock>;
+        is $res, "OK 0\r\n";
+
+        note "simple get with func max";
+        print {$sock} 'get collection bar:str jaz:ing ts:13136111-1313812776 foo:max';
+        $res = <$sock>;
+        is $res, "OK 2\r\n";
+
+        note "simple get with func avg";
+        print {$sock} 'get collection bar:str jaz:ing ts:13136111-1313812776 foo:avg';
+        $res = <$sock>;
+        is $res, "OK 1.5\r\n";
 
         note "finalize";
         print {$sock} "quit\n";
