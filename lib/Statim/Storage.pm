@@ -37,6 +37,7 @@ sub _get_period {
 
 sub _get_counter {
     my ( $self, $collection ) = @_;
+    return unless ref($conf->{$collection}->{fields}) eq 'HASH';
     foreach my $field ( keys $conf->{$collection}->{fields} ) {
         my $type = $conf->{$collection}->{fields}->{$field};
         return $field if $type eq 'count';
@@ -110,9 +111,9 @@ sub _arrange_key_by_hash {
 sub _parse_args_to_get {
     my ( $self, @names ) = @_;
     my $collection  = shift(@names);
-    my $count_field = $self->_get_counter($collection);
-    my ($count_to_parse) = grep { /^$count_field/ } @names;
-    my ( $count_field_p, $count_func ) =
+    my $count_field = $self->_get_counter($collection) || '';
+    my ($count_to_parse) = $count_field ? grep { /^$count_field/ } @names : ('');
+    my ( undef, $count_func ) =
       $count_to_parse =~ /:/
       ? split( ':', $count_to_parse )
       : ( $count_field, 'sum' );
