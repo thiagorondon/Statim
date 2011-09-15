@@ -38,7 +38,7 @@ sub _get_period {
 sub _get_counter {
     my ( $self, $collection ) = @_;
     return unless ref($conf->{$collection}->{fields}) eq 'HASH';
-    foreach my $field ( keys $conf->{$collection}->{fields} ) {
+    foreach my $field ( keys %{$conf->{$collection}->{fields}} ) {
         my $type = $conf->{$collection}->{fields}->{$field};
         return $field if $type eq 'count';
     }
@@ -55,7 +55,7 @@ sub _parse_args_to_add {
 
     my ( $counter, $incrby, %data );
     my $declare_args = 0;
-    my @fields       = keys $conf->{$collection}->{fields};
+    my @fields       = keys %{$conf->{$collection}->{fields}};
 
     foreach my $field (@fields) {
         my $type = $conf->{$collection}->{fields}->{$field};
@@ -205,7 +205,7 @@ sub _get_key_value {
 sub _get_all_possible_keys {
     my ( $self, $collection, $ts, @argr ) = @_;
 
-    my @fields = keys $conf->{$collection}->{fields};
+    my @fields = keys %{$conf->{$collection}->{fields}};
     my @ns;
 
     foreach my $item ( sort @fields ) {

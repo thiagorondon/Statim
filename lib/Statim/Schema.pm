@@ -35,7 +35,7 @@ sub get {
     my $field_count = 0;
     my $field_enum  = 0;
 
-    foreach my $item ( keys $conf ) {
+    foreach my $item ( keys %{$conf} ) {
 
         die "You must define aggregate method in [$item]"
           unless defined( $conf->{$item}->{aggregate} );
@@ -51,7 +51,7 @@ sub get {
         die "Period must be positive integer"
           unless $period =~ /^\d+$/;
 
-        foreach my $field ( keys $conf->{$item}->{fields} ) {
+        foreach my $field ( keys %{$conf->{$item}->{fields}} ) {
             my $type = $conf->{$item}->{fields}->{$field};
 
             die "The field [$field]  must be enum or count"
