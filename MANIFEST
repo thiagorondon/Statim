@@ -35,7 +35,7 @@ lib/Statim/Collection/Parser.pm
 lib/Statim/Command.pm
 lib/Statim/Command/Line.pm
 lib/Statim/Config.pm
-lib/Statim/Doc/Spec.pm
+lib/Statim/Doc/Protocol.pm
 lib/Statim/Engine/AnyEvent.pm
 lib/Statim/Parser.pm
 lib/Statim/Runner.pm
