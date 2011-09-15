@@ -10,9 +10,11 @@ requires 'Redis';
 requires 'Scalar::Util';
 requires 'Class::Data::Inheritable';
 requires 'List::Util'; 
+requires 'DateTime';
 
 requires 'Test::More';
 requires 'Test::Exception';
 requires 'Test::Vars';
+requires 'Test::TCP';
 
 WriteAll;
