@@ -10,6 +10,7 @@ requires 'Redis';
 requires 'Scalar::Util';
 requires 'Class::Data::Inheritable';
 requires 'List::Util'; 
+requires 'List::MoreUtils';
 requires 'DateTime';
 
 requires 'Test::More';

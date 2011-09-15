@@ -7,6 +7,7 @@ use DateTime;
 use POSIX qw(floor);
 use Scalar::Util qw(looks_like_number);
 use List::Util qw(sum);
+use List::MoreUtils qw(distinct);
 
 use Statim::Schema;
 
@@ -265,7 +266,7 @@ sub get {
                 $accessor[0] = 0 unless scalar(@accessor);
                 $count = $value if $value > $accessor[0];
             }
-            elsif ( $count_func eq 'avg' ) {
+            elsif ( $count_func eq 'avg' or $count_func eq 'distinct') {
                 push( @accessor, $value );
             }
         }
@@ -274,6 +275,12 @@ sub get {
     if ( $count_func eq 'avg' ) {
         if ( scalar(@accessor) ) {
             $count = sum(@accessor) / scalar(@accessor);
+        }
+    }
+
+    if ( $count_func eq 'distinct' ) {
+        if ( scalar(@accessor) ) {
+            $count = distinct (@accessor);
         }
     }
 

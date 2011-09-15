@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 9;
+use Test::More tests => 10;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -73,6 +73,12 @@ test_tcp(
         $res = <$sock>;
         is $res, "OK 1.5\r\n";
 
+        note "simple get with func distinct";
+        print {$sock} 'get collection bar:str jaz:ing ts:13136111-1313812776 foo:distinct';
+        $res = <$sock>;
+        is $res, "OK 2\r\n";
+
+ 
         note "finalize";
         print {$sock} "quit\n";
     }
