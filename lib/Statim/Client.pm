@@ -46,6 +46,11 @@ sub get {
     return $self->_send_command('get', @ns);
 }
 
+sub del {
+    my ( $self, @ns ) = @_;
+    return $self->_send_comand('del', @ns);
+}
+
 sub quit { 1 }
 
 1;
