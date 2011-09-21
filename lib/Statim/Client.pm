@@ -48,12 +48,12 @@ sub get {
 
 sub del {
     my ( $self, @ns ) = @_;
-    return $self->_send_comand('del', @ns);
+    return $self->_send_command('del', @ns);
 }
 
 sub period {
     my ( $self, $collection ) = @_;
-    return $self->_send_comand('period', $collection);
+    return $self->_send_command('period', $collection);
 }
 
 sub quit { 1 }
