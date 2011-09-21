@@ -35,6 +35,9 @@ Options:
 Examples:
    
    $0 add collection foo:bar count:1
+   $0 version
+   $0 period collection
+   $0 get collection foo:bar count
 
 EOF
     exit(0);

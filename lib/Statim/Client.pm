@@ -51,6 +51,11 @@ sub del {
     return $self->_send_comand('del', @ns);
 }
 
+sub period {
+    my ( $self, $collection ) = @_;
+    return $self->_send_comand('period', $collection);
+}
+
 sub quit { 1 }
 
 1;
