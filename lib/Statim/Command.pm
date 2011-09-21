@@ -40,4 +40,9 @@ sub get {
     return $self->_storage->get( @_ );
 }
 
+sub period {
+    my ($self, $collection) = @_;
+    return $self->_storage->_get_period($collection);
+}
+
 1;

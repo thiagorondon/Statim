@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 11;
+use Test::More tests => 12;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -44,6 +44,11 @@ test_tcp(
         print {$sock} "version\n";
         my $res = <$sock>;
         is $res, 'OK ' . $Statim::VERSION . "\r\n";
+
+        note "period";
+        print {$sock} "period collection\n";
+        $res = <$sock>;
+        is $res, "OK 84600\r\n";
 
         note "simple add 1";
         print {$sock} 'add collection bar:jaz foo:1';
