@@ -42,6 +42,7 @@ sub get {
 
 sub period {
     my ($self, $collection) = @_;
+    return '+no collection' unless $collection;
     my $ret = $self->_storage->_get_period($collection);
     return $ret ? $ret : '+no collection';
 }

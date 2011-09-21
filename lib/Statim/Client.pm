@@ -53,6 +53,7 @@ sub del {
 
 sub period {
     my ( $self, $collection ) = @_;
+    return '+no collection' unless $collection;
     return $self->_send_command('period', $collection);
 }
 
