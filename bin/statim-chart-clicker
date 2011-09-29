@@ -1,0 +1,174 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+
+use FindBin qw($Bin);
+use lib "$Bin/../lib/";
+
+use Statim;
+use Statim::Client;
+use Getopt::Long;
+use DateTime;
+
+my $client      = undef;
+my $client_host = '127.0.0.1';
+my $client_port = '12345';
+my $client_collection;
+my @client_enum;
+my $client_count;
+
+my $client_ts;
+my $client_lastseconds;
+
+my $output = 'file.png';
+my $action;
+
+sub parse_options {
+    Getopt::Long::GetOptions(
+        'h|help' => sub { $action = 'help' },
+        'c|collection=s'  => \$client_collection,
+        'e|enum=s'        => \@client_enum,
+        'n|count=s'       => \$client_count,
+        'o|output=s'      => \$output,
+        'l|lastseconds=i' => \$client_lastseconds,
+        't|ts=s'          => \$client_ts,
+        'host=s'          => \$client_host,
+        'port=i'          => \$client_port
+    );
+
+}
+
+sub help {
+    print <<EOF;
+Usage: $0 [options] ...
+
+Options:
+  -h,--help        show this help
+  --host           set statim server host
+  --port           set statim server port
+  -c,--collection  collection name
+  -e,--enum        enum types and values to get
+  -n,--count       name of count field
+  -o,--output      output filename
+  -t,--ts          time series period in epoch time, ex.: 123456780-123456790
+  -l,--lastseconds last seconds
+  
+
+Examples:
+   
+    $0 -c collection1 -e bar:doo:lou -n foo
+
+EOF
+    exit(0);
+}
+
+sub get_now {
+    my $dt = DateTime->now();
+    return $dt->epoch;
+}
+
+sub connect_statim {
+    $client = Statim::Client->new(
+        {
+            host => $client_host,
+            port => $client_port
+        }
+    );
+}
+
+sub get_period {
+    my $period = $client->period($client_collection);
+    die "unknow collection" unless $period =~ /^OK/;
+    $period =~ s/^OK //;
+    chomp($period);
+    return $period;
+}
+
+sub disconnect_statim {
+    $client->quit;
+}
+
+sub get_periods {
+    my $base = shift;
+    my @periods;
+    push( @periods, $base );
+    foreach my $item ( 1 .. 30 ) {
+        push( @periods, $base - ( $item * 84600 ) );
+    }
+    return @periods;
+}
+
+sub get_enums {
+    my %keys;
+    foreach my $item (@client_enum) {
+        my ( $name, @values ) = split( ':', $item );
+        $keys{$name} = \@values;
+    }
+    return %keys;
+}
+
+sub get_serie {
+    my $res = $client->get(@_);
+    $res =~ s/^OK //g;
+    chomp($res);
+    return $res;
+}
+
+sub get_cmds_to_get {
+    my ( $ts, $data ) = @_;
+
+    my %output;
+    foreach my $serie ( @{$ts} ) {
+        foreach my $item ( keys %{$data} ) {
+            foreach my $value ( @{ $data->{$item} } ) {
+                my $ret = &get_serie(
+                    $client_collection, "$item:$value",
+                    "ts:$serie",        $client_count
+                );
+                $output{$serie}{$item}{$value} = $ret;
+            }
+
+        }
+
+    }
+    return %output;
+
+}
+
+sub do {
+    if ($action) {
+        &help;
+    }
+    &connect_statim;
+
+    my $now     = &get_now;
+    my $period  = &get_period;
+    my @periods = &get_periods($now);
+
+    print "now: $now\n";
+    print "period: $period\n";
+
+    print "periods: \n";
+    print join( ' ', @periods );
+    print "\n";
+
+    my %data = &get_enums;
+
+    use Data::Dumper;
+    print Dumper( \%data );
+
+    my %gets = &get_cmds_to_get( \@periods, \%data );
+
+    print Dumper( \%gets );
+
+    &disconnect_statim;
+
+    return 0;
+}
+
+unless (caller) {
+    &parse_options;
+    &do;
+}
+
