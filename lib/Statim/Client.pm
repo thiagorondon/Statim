@@ -31,31 +31,13 @@ sub _send_command {
     return $res;
 }
 
-sub add {
-    my ( $self, @ns ) = @_;
-    return $self->_send_command('add', @ns);
+foreach my $name ( 'add', 'version', 'get', 'del', 'set' ) {
+    no strict 'refs';
+    *$name = sub {
+        my $self = shift;
+        return $self->_send_command( $name, @_);
+    }
 }
-
-sub version {
-    my $self = shift;
-    return $self->_send_command('version');
-}
-
-sub get {
-    my ( $self, @ns ) = @_;
-    return $self->_send_command('get', @ns);
-}
-
-sub del {
-    my ( $self, @ns ) = @_;
-    return $self->_send_command('del', @ns);
-}
-
-sub set {
-    my ( $self, @ns ) = @_;
-    return $self->_send_command('set', @ns);
-}
-
 
 sub period {
     my ( $self, $collection ) = @_;
