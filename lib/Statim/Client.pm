@@ -51,6 +51,12 @@ sub del {
     return $self->_send_command('del', @ns);
 }
 
+sub set {
+    my ( $self, @ns ) = @_;
+    return $self->_send_command('set', @ns);
+}
+
+
 sub period {
     my ( $self, $collection ) = @_;
     return '+no collection' unless $collection;

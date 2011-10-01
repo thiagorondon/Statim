@@ -34,6 +34,13 @@ sub add {
     return $self->_storage->add( @_ );
 }
 
+sub set {
+    my $self = shift;
+    return '+parser' unless scalar(@_) > 1;
+    $self->_storage->del( @_ );
+    return $self->_storage->add( @_ );
+}
+
 sub get {
     my $self = shift;
     return '+parser' unless scalar(@_) > 1;
