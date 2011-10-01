@@ -10,6 +10,10 @@ use Statim;
 use Statim::Client;
 use Getopt::Long;
 use DateTime;
+use Data::Dumper;
+use Chart::Clicker;
+use Chart::Clicker::Data::Series;
+use Chart::Clicker::Renderer::Area;
 
 my $client      = undef;
 my $client_host = '127.0.0.1';
@@ -102,6 +106,7 @@ sub get_periods {
 sub get_enums {
     my %keys;
     foreach my $item (@client_enum) {
+        #warn $item;
         my ( $name, @values ) = split( ':', $item );
         $keys{$name} = \@values;
     }
@@ -109,6 +114,9 @@ sub get_enums {
 }
 
 sub get_serie {
+    
+    return int(rand(15));
+
     my $res = $client->get(@_);
     $res =~ s/^OK //g;
     chomp($res);
@@ -120,8 +128,12 @@ sub get_cmds_to_get {
 
     my %output;
     foreach my $serie ( @{$ts} ) {
+        #warn $serie;
         foreach my $item ( keys %{$data} ) {
+            #warn $item;
+            #warn Dumper(\$data);
             foreach my $value ( @{ $data->{$item} } ) {
+                #warn $value;
                 my $ret = &get_serie(
                     $client_collection, "$item:$value",
                     "ts:$serie",        $client_count
@@ -153,16 +165,59 @@ sub do {
     print join( ' ', @periods );
     print "\n";
 
+    #warn "get_enums";
     my %data = &get_enums;
 
-    use Data::Dumper;
-    print Dumper( \%data );
+#    print Dumper( \%data );
 
     my %gets = &get_cmds_to_get( \@periods, \%data );
 
     print Dumper( \%gets );
 
+   my $cc = Chart::Clicker->new(width => 1000, height => 250, format => 'png');
+
+    my @times;
+    my @hours;
+    my $i = 0;
+    map { push(@times, $_); push(@hours, $i); $i++; } keys %gets;
+
+    my @ts_chart;
+    my @series;
+    
+    foreach my $time (@times) {
+        foreach my $key ( keys $gets{$time} ) {
+            map { push(@series, $gets{$time}{$key}{$_}) } keys $gets{$time}{$key};
+        }
+    }        
+    
+    push(@ts_chart,
+        Chart::Clicker::Data::Series->new(
+        keys    => \@hours,
+        values  => \@series,
+    ));
+
+    #warn Dumper(\@times);
+    #warn Dumper(\@series);
+
+    my $ds = Chart::Clicker::Data::DataSet->new(series => \@ts_chart);
+    $cc->title->padding->bottom(10);
+    $cc->title->text('texto foo');
+
+    $cc->add_to_datasets($ds);
+    
+    my $defctx = $cc->get_context('default');
+
+    my $area = Chart::Clicker::Renderer::Area->new(opacity => .6);
+    $area->brush->width(3);
+    $defctx->renderer($area);
+    
+    $defctx->range_axis->label('Lorem');
+    $defctx->domain_axis->label('Ipsum');
+
+    $defctx->renderer->brush->width(2);
+
     &disconnect_statim;
+    $cc->write_output('foo.png');
 
     return 0;
 }
