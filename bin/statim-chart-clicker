@@ -25,7 +25,10 @@ my $client_count;
 my $client_ts;
 my $client_lastseconds;
 
-my $output = 'file.png';
+my $chart_output = 'file.png';
+my $chart_width  = 1000;
+
+my $debug;
 my $action;
 
 sub parse_options {
@@ -34,11 +37,15 @@ sub parse_options {
         'c|collection=s'  => \$client_collection,
         'e|enum=s'        => \@client_enum,
         'n|count=s'       => \$client_count,
-        'o|output=s'      => \$output,
         'l|lastseconds=i' => \$client_lastseconds,
         't|ts=s'          => \$client_ts,
         'host=s'          => \$client_host,
-        'port=i'          => \$client_port
+        'port=i'          => \$client_port,
+
+        'd|debug' => \$debug,
+
+        'w|width=i'  => \$chart_width,
+        'o|output=s' => \$chart_output,
     );
 
 }
@@ -74,8 +81,7 @@ sub get_now {
 
 sub connect_statim {
     $client = Statim::Client->new(
-        {
-            host => $client_host,
+        {   host => $client_host,
             port => $client_port
         }
     );
@@ -106,7 +112,6 @@ sub get_periods {
 sub get_enums {
     my %keys;
     foreach my $item (@client_enum) {
-        #warn $item;
         my ( $name, @values ) = split( ':', $item );
         $keys{$name} = \@values;
     }
@@ -114,8 +119,8 @@ sub get_enums {
 }
 
 sub get_serie {
-    
-    return int(rand(15));
+
+    return int( rand(15) );
 
     my $res = $client->get(@_);
     $res =~ s/^OK //g;
@@ -126,25 +131,18 @@ sub get_serie {
 sub get_cmds_to_get {
     my ( $ts, $data ) = @_;
 
-    my %output;
+    my %ret;
     foreach my $serie ( @{$ts} ) {
-        #warn $serie;
         foreach my $item ( keys %{$data} ) {
-            #warn $item;
-            #warn Dumper(\$data);
             foreach my $value ( @{ $data->{$item} } ) {
-                #warn $value;
-                my $ret = &get_serie(
-                    $client_collection, "$item:$value",
-                    "ts:$serie",        $client_count
-                );
-                $output{$serie}{$item}{$value} = $ret;
+                my $ret = &get_serie( $client_collection, "$item:$value", "ts:$serie", $client_count );
+                $ret{$serie}{$item}{$value} = $ret;
             }
 
         }
 
     }
-    return %output;
+    return %ret;
 
 }
 
@@ -158,66 +156,66 @@ sub do {
     my $period  = &get_period;
     my @periods = &get_periods($now);
 
-    print "now: $now\n";
-    print "period: $period\n";
-
-    print "periods: \n";
-    print join( ' ', @periods );
-    print "\n";
-
-    #warn "get_enums";
     my %data = &get_enums;
 
-#    print Dumper( \%data );
+    #    print Dumper( \%data );
 
     my %gets = &get_cmds_to_get( \@periods, \%data );
 
-    print Dumper( \%gets );
+    if ($debug) {
+        print "now: $now\n";
+        print "period: $period\n";
 
-   my $cc = Chart::Clicker->new(width => 1000, height => 250, format => 'png');
+        print "periods: \n";
+        print join( ' ', @periods );
+        print "\n";
+
+        print Dumper( \%gets );
+    }
+
+    my $cc = Chart::Clicker->new( width => $chart_width, height => 250, format => 'png' );
 
     my @times;
     my @hours;
     my $i = 0;
-    map { push(@times, $_); push(@hours, $i); $i++; } keys %gets;
+    map { push( @times, $_ ); push( @hours, $i ); $i++; } keys %gets;
 
     my @ts_chart;
     my @series;
-    
+
     foreach my $time (@times) {
         foreach my $key ( keys $gets{$time} ) {
-            map { push(@series, $gets{$time}{$key}{$_}) } keys $gets{$time}{$key};
+            map { push( @series, $gets{$time}{$key}{$_} ) } keys $gets{$time}{$key};
         }
-    }        
-    
-    push(@ts_chart,
+    }
+
+    push(
+        @ts_chart,
         Chart::Clicker::Data::Series->new(
-        keys    => \@hours,
-        values  => \@series,
-    ));
+            keys   => \@hours,
+            values => \@series,
+        )
+    );
 
-    #warn Dumper(\@times);
-    #warn Dumper(\@series);
-
-    my $ds = Chart::Clicker::Data::DataSet->new(series => \@ts_chart);
+    my $ds = Chart::Clicker::Data::DataSet->new( series => \@ts_chart );
     $cc->title->padding->bottom(10);
     $cc->title->text('texto foo');
 
     $cc->add_to_datasets($ds);
-    
+
     my $defctx = $cc->get_context('default');
 
-    my $area = Chart::Clicker::Renderer::Area->new(opacity => .6);
+    my $area = Chart::Clicker::Renderer::Area->new( opacity => .6 );
     $area->brush->width(3);
     $defctx->renderer($area);
-    
+
     $defctx->range_axis->label('Lorem');
     $defctx->domain_axis->label('Ipsum');
 
     $defctx->renderer->brush->width(2);
 
     &disconnect_statim;
-    $cc->write_output('foo.png');
+    $cc->write_output($chart_output);
 
     return 0;
 }
