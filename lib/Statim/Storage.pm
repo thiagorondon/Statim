@@ -4,12 +4,12 @@ package Statim::Storage;
 use strict;
 use warnings;
 use DateTime;
-use POSIX qw(floor);
 use Scalar::Util qw(looks_like_number);
 use List::Util qw(sum);
 use List::MoreUtils qw(distinct);
-
 use Statim::Schema;
+
+use base qw(Statim::Step);
 
 # TODO: Split Storage // Schema checks // Storage::Engine.
 
@@ -24,11 +24,6 @@ sub new {
     $conf = $schema->get;
 
     return $self;
-}
-
-sub _find_period_key {
-    my ( $self, $period, $epoch ) = @_;
-    return floor( $epoch / $period );
 }
 
 sub _get_period {
@@ -158,7 +153,7 @@ sub add {
 
     my $ts         = $self->_get_ts(@args);
     my $period_key = $self->_get_period($collection);
-    my $period     = $self->_find_period_key( $period_key, $ts );
+    my $period     = $self->_get_step( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) =
       $self->_parse_args_to_add( $collection, @args );
@@ -180,7 +175,7 @@ sub del {
 
     my $ts         = $self->_get_ts(@args);
     my $period_key = $self->_get_period($collection);
-    my $period     = $self->_find_period_key( $period_key, $ts );
+    my $period     = $self->_get_step( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) =
       $self->_parse_args_to_add( $collection, @args );
@@ -247,7 +242,7 @@ sub get {
 
     foreach my $ts_item (@ts_args) {
         my $period_key = $self->_get_period($collection);
-        my $period = $self->_find_period_key( $period_key, $ts_item );
+        my $period = $self->_get_step( $period_key, $ts_item );
 
         my @ps = $self->_get_all_possible_keys( $collection, $period, @names );
 

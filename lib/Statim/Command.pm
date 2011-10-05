@@ -5,6 +5,7 @@ use strict;
 use warnings;
 
 use Statim;
+use base qw(Statim::Step);
 
 sub new {
     my ( $class, $self ) = @_;
@@ -52,6 +53,14 @@ sub period {
     return '+no collection' unless $collection;
     my $ret = $self->_storage->_get_period($collection);
     return $ret ? $ret : '+no collection';
+}
+
+sub step {
+  my ($self, $collection, $epoch) = @_;
+  return '+no collection' unless $collection;
+  return '+no epoch' unless $epoch;
+  my $period = $self->_storage->_get_period($collection);
+  return $self->_get_step($period, $epoch);
 }
 
 1;

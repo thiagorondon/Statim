@@ -11,8 +11,8 @@ use_ok('Statim::Storage');
 
 my $storage = Statim::Storage->new();
 
-is ($storage->_find_period_key(1, 1), 1);
-is ($storage->_find_period_key(8, 999), 124);
+is ($storage->_get_step(1, 1), 1);
+is ($storage->_get_step(8, 999), 124);
 
 is ($storage->_get_period('collection'), 84600);
 is ($storage->_get_period('collection2'), undef);

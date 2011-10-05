@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 6;
+use Test::More tests => 8;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -49,6 +49,16 @@ test_tcp(
         note "simple get";
         $res = $client->get( 'collection', 'bar:foo', 'jaz:boo', 'foo' );
         is $res, "OK 4\r\n";
+
+        note "simple period";
+        $res = $client->period('collection');
+        is $res, "OK 84600\r\n";
+
+        note "simple step";
+        $res = $client->step( 'collection', '1234567890');
+        is $res, "OK 14593\r\n";
+
+
 
         note "finalize";
         $res = $client->quit;

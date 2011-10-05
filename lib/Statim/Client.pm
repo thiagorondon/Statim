@@ -45,6 +45,14 @@ sub period {
     return $self->_send_command('period', $collection);
 }
 
+sub step {
+    my ( $self, $collection, $epoch ) = @_;
+    return '+no collection' unless $collection;
+    return '+no epoch' unless $epoch;
+    return $self->_send_command('step', $collection, $epoch);
+}
+
+
 sub quit { 1 }
 
 1;
