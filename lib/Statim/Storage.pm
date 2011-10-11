@@ -3,13 +3,13 @@ package Statim::Storage;
 
 use strict;
 use warnings;
-use DateTime;
+
 use Scalar::Util qw(looks_like_number);
 use List::Util qw(sum);
 use List::MoreUtils qw(distinct);
 use Statim::Schema;
 
-use base qw(Statim::Step);
+use base qw(Statim::Step Statim::Ts);
 
 # TODO: Split Storage // Schema checks // Storage::Engine.
 
@@ -78,18 +78,6 @@ sub _parse_args_to_add {
 
     return '+missing args' unless $declare_args == scalar(@fields);
     return ( $counter, $incrby, %data );
-}
-
-sub _get_ts {
-    my ( $self, @args ) = @_;
-    foreach my $arg (@args) {
-        my ( $var, $value ) = split( /:/, $arg );
-        next unless $var eq 'ts';
-        return $value;
-    }
-
-    my $dt = DateTime->now;
-    return $dt->epoch;
 }
 
 sub _arrange_key_by_hash {
