@@ -11,6 +11,7 @@ sub _get_ts {
     foreach my $arg (@args) {
         my ( $var, $value ) = split( /:/, $arg );
         next unless $var eq 'ts';
+        next unless $value =~ /^[0-9\-]*$/;
         return $value;
     }
 
