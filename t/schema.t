@@ -1,5 +1,5 @@
 
-use Test::More tests => 10;
+use Test::More tests => 12;
 use Test::Exception;
 
 use_ok('Statim::Schema');
@@ -74,5 +74,19 @@ my $schema = Statim::Schema->new;
     map { $sc->{collection}->{fields}->{"foo$_"} = 'enum' } 1 .. 256;
     $schema->data($sc);
     throws_ok { $schema->get } qr/0-255/, 'more than 255 fields enum';
+}
+
+{
+    my $sc = &get_schema;
+    $sc->{collection}->{fields}->{ts} = 'enum';
+    $schema->data($sc);
+    throws_ok { $schema->get } qr/The field name is reserved/, 'with reserverd name ts';
+}
+
+{
+    my $sc = &get_schema;
+    $sc->{collection}->{fields}->{step} = 'enum';
+    $schema->data($sc);
+    throws_ok { $schema->get } qr/The field name is reserved/, 'with reserverd name step';
 }
 
