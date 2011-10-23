@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 4;
+use Test::More tests => 5;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -48,6 +48,11 @@ test_tcp(
         $res = <$sock>;
         is $res, "CLIENT ERROR missing args\r\n";
 
+        note "add with ts and step";
+        print {$sock} 'add collection bar:test2 jaz:boo foo:1 ts:123456790 step:10';
+        $res = <$sock>;
+        is $res, "CLIENT ERROR You must define only step or ts\r\n";
+ 
         note "finalize";
         print {$sock} "quit\n";
     }
