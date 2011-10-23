@@ -60,7 +60,7 @@ sub step {
   return '+no collection' unless $collection;
   return '+no epoch' unless $epoch;
   my $period = $self->_storage->_get_period($collection);
-  return $self->_get_step($period, $epoch);
+  return $self->_calc_step($period, $epoch);
 }
 
 1;

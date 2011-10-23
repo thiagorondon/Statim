@@ -1,5 +1,5 @@
 
-use Test::More tests => 9;
+use Test::More tests => 7;
 
 # TODO: More, More.
 use lib 't/tlib';
@@ -10,9 +10,6 @@ $ENV{'STATIM_CONFIG'} = $config;
 use_ok('Statim::Storage');
 
 my $storage = Statim::Storage->new();
-
-is ($storage->_get_step(1, 1), 1);
-is ($storage->_get_step(8, 999), 124);
 
 is ($storage->_get_period('collection'), 84600);
 is ($storage->_get_period('collection2'), undef);

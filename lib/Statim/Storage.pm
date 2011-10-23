@@ -141,7 +141,7 @@ sub add {
 
     my $ts         = $self->_get_ts(@args);
     my $period_key = $self->_get_period($collection);
-    my $period     = $self->_get_step( $period_key, $ts );
+    my $period     = $self->_calc_step( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) =
       $self->_parse_args_to_add( $collection, @args );
@@ -163,7 +163,7 @@ sub del {
 
     my $ts         = $self->_get_ts(@args);
     my $period_key = $self->_get_period($collection);
-    my $period     = $self->_get_step( $period_key, $ts );
+    my $period     = $self->_calc_step( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) =
       $self->_parse_args_to_add( $collection, @args );
@@ -230,7 +230,7 @@ sub get {
 
     foreach my $ts_item (@ts_args) {
         my $period_key = $self->_get_period($collection);
-        my $period = $self->_get_step( $period_key, $ts_item );
+        my $period = $self->_calc_step( $period_key, $ts_item );
 
         my @ps = $self->_get_all_possible_keys( $collection, $period, @names );
 
