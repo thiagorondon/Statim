@@ -12,6 +12,11 @@ sub _get_ts {
         my ( $var, $value ) = split( /:/, $arg );
         next unless $var eq 'ts';
         next unless $value =~ /^[0-9\-]*$/;
+        
+        if ($value =~ /-/) {
+          my ($min, $max) = split('-', $value);
+          return '+You ts range is wrong, min > max' if $min > $max;
+        }
         return $value;
     }
 

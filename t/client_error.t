@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 5;
+use Test::More tests => 6;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -52,6 +52,11 @@ test_tcp(
         print {$sock} 'add collection bar:test2 jaz:boo foo:1 ts:123456790 step:10';
         $res = <$sock>;
         is $res, "CLIENT ERROR You must define only step or ts\r\n";
+ 
+        note "get with wront ts range";
+        print {$sock} 'get collection bar:test2 jaz:boo foo ts:123456790-12';
+        $res = <$sock>;
+        is $res, "CLIENT ERROR You ts range is wrong, min > max\r\n";
  
         note "finalize";
         print {$sock} "quit\n";
