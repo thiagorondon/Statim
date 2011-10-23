@@ -211,8 +211,8 @@ sub _get_timestamp {
   }
 
   return '+You must define only step or ts' if $has_ts and $has_step;
-  return $self->_get_step if $has_step;
-  return $self->_get_ts;
+  return $self->_get_step(@args) if $has_step;
+  return $self->_get_ts(@args);
 }
 
 sub get {
