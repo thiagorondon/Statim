@@ -33,8 +33,8 @@ sub _get_period {
 
 sub _get_counter {
     my ( $self, $collection ) = @_;
-    return unless ref($conf->{$collection}->{fields}) eq 'HASH';
-    foreach my $field ( keys %{$conf->{$collection}->{fields}} ) {
+    return unless ref( $conf->{$collection}->{fields} ) eq 'HASH';
+    foreach my $field ( keys %{ $conf->{$collection}->{fields} } ) {
         my $type = $conf->{$collection}->{fields}->{$field};
         return $field if $type eq 'count';
     }
@@ -51,7 +51,7 @@ sub _parse_args_to_add {
 
     my ( $counter, $incrby, %data );
     my $declare_args = 0;
-    my @fields       = keys %{$conf->{$collection}->{fields}};
+    my @fields       = keys %{ $conf->{$collection}->{fields} };
 
     foreach my $field (@fields) {
         my $type = $conf->{$collection}->{fields}->{$field};
@@ -94,9 +94,10 @@ sub _arrange_key_by_hash {
 
 sub _parse_args_to_get {
     my ( $self, @names ) = @_;
-    my $collection  = shift(@names);
+    my $collection = shift(@names);
     my $count_field = $self->_get_counter($collection) || '';
-    my ($count_to_parse) = $count_field ? grep { /^$count_field/ } @names : ('');
+    my ($count_to_parse) =
+      $count_field ? grep { /^$count_field/ } @names : ('');
     my ( undef, $count_func ) =
       $count_to_parse =~ /:/
       ? split( ':', $count_to_parse )
@@ -118,12 +119,12 @@ sub add {
 
     return "-no collection" unless $self->_check_collection($collection);
 
-#    my $ts         = $self->_get_ts(@args);
-    my $ts      = $self->_get_timestamp(@args);                                                                                                                                      
+    #    my $ts         = $self->_get_ts(@args);
+    my $ts = $self->_get_timestamp(@args);
     return $ts unless looks_like_number($ts);
 
     my $period_key = $self->_get_period($collection);
-    my $period     = $self->_calc_step( $period_key, $ts );
+    my $period = $self->_calc_step( $period_key, $ts );
 
     my ( $counter, $incrby, %data ) =
       $self->_parse_args_to_add( $collection, @args );
@@ -171,7 +172,7 @@ sub _get_key_value {
 sub _get_all_possible_keys {
     my ( $self, $collection, $ts, @argr ) = @_;
 
-    my @fields = keys %{$conf->{$collection}->{fields}};
+    my @fields = keys %{ $conf->{$collection}->{fields} };
     my @ns;
 
     foreach my $item ( sort @fields ) {
@@ -200,19 +201,19 @@ sub _get_all_possible_keys {
 }
 
 sub _get_timestamp {
-  my ($self, @args) = @_;
+    my ( $self, @args ) = @_;
 
-  my $has_ts = 0;
-  my $has_step = 0;
-  foreach my $arg (@args) {
-    my ( $var, undef ) = split( /:/, $arg );
-    $has_ts = 1 if $var eq 'ts';
-    $has_step = 1 if $var eq 'step';
-  }
+    my $has_ts   = 0;
+    my $has_step = 0;
+    foreach my $arg (@args) {
+        my ( $var, undef ) = split( /:/, $arg );
+        $has_ts   = 1 if $var eq 'ts';
+        $has_step = 1 if $var eq 'step';
+    }
 
-  return '+You must define only step or ts' if $has_ts and $has_step;
-  return $self->_get_step(@args) if $has_step;
-  return $self->_get_ts(@args);
+    return '+You must define only step or ts' if $has_ts and $has_step;
+    return $self->_get_step(@args) if $has_step;
+    return $self->_get_ts(@args);
 }
 
 sub get {
@@ -220,13 +221,13 @@ sub get {
     my ( $collection, $count_func, @names ) = $self->_parse_args_to_get(@args);
     return "-no collection" unless $self->_check_collection($collection);
 
-    my $ts      = $self->_get_timestamp(@args);
-    return $ts  if $ts and substr($ts, 0,1) eq '+';
+    my $ts = $self->_get_timestamp(@args);
+    return $ts if $ts and substr( $ts, 0, 1 ) eq '+';
     my @ts_args = $self->_get_ts_range( $collection, $ts );
-    my $count   = 0;
+    my $count = 0;
 
     my @accessor;    # TODO: we need another way to that  !!!
-    
+
     foreach my $ts_item (@ts_args) {
         my $period_key = $self->_get_period($collection);
         my $period = $self->_calc_step( $period_key, $ts_item );
@@ -236,19 +237,21 @@ sub get {
         foreach my $item (@ps) {
             my $value = $self->_get_key_value($item);
             next unless defined($value);
-            
+
             if ( $count_func eq 'sum' ) {
                 $count += $self->_get_key_value($item);
             }
             elsif ( $count_func eq 'min' ) {
-                $count = $accessor[0] = $value if scalar(@accessor) and $value < $accessor[0];
+                $count = $accessor[0] = $value
+                  if scalar(@accessor)
+                      and $value < $accessor[0];
                 $count = $accessor[0] = $value unless scalar(@accessor);
             }
             elsif ( $count_func eq 'max' ) {
                 $accessor[0] = 0 unless scalar(@accessor);
                 $count = $accessor[0] = $value if $value > $accessor[0];
             }
-            elsif ( $count_func eq 'avg' or $count_func eq 'distinct') {
+            elsif ( $count_func eq 'avg' or $count_func eq 'distinct' ) {
                 push( @accessor, $value );
             }
         }
@@ -262,10 +265,10 @@ sub get {
 
     if ( $count_func eq 'distinct' ) {
         if ( scalar(@accessor) ) {
-            $count = distinct (@accessor);
+            $count = distinct(@accessor);
         }
     }
-    
+
     return $count;
 }
 

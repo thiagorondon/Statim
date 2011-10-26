@@ -9,7 +9,7 @@ use base "Statim::Storage::Interface::Redis";
 ## Use the same redis connection per class ?
 
 use Redis;
-my $rconn  = undef;
+my $rconn = undef;
 
 sub _redis_server {
     my $self = shift;
@@ -31,7 +31,7 @@ sub _get_possible_keys {
 sub _delete_key {
     my ( $self, $key ) = @_;
     my $redis = $self->_redis_conn;
-    $redis->del( $key );
+    $redis->del($key);
 }
 
 sub __sum_data {
@@ -52,7 +52,7 @@ sub __uniq_data {
 
 sub _save_data {
     my ( $self, $key, $incrby, $aggregate ) = @_;
-    
+
     return $self->__uniq_data( $key, $incrby ) if $aggregate eq 'uniq';
 
     return $self->__sum_data( $key, $incrby );

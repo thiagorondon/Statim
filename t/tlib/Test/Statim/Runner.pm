@@ -21,19 +21,22 @@ sub test_statim_server {
     my $port = shift;
 
     my $storage = Statim::Storage::Redis->new(
-        {   redis_host => $redis_host,
+        {
+            redis_host => $redis_host,
             redis_port => $redis_port
         }
     );
 
     my $engine = Statim::Engine::AnyEvent->new(
-        {   host => $host,
+        {
+            host => $host,
             port => $port
         }
     );
 
     my $app = Statim::Runner->new(
-        {   storage => $storage,
+        {
+            storage => $storage,
             engine  => $engine
         }
     );
