@@ -4,7 +4,7 @@ package Statim::Storage::Redis;
 use strict;
 use warnings;
 
-use base "Statim::Storage::Engine::Redis";
+use base "Statim::Storage::Interface::Redis";
 
 ## Use the same redis connection per class ?
 

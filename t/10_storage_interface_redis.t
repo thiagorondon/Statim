@@ -7,9 +7,9 @@ use Test::Statim::Config;
 my $config = test_statim_gen_config;
 $ENV{'STATIM_CONFIG'} = $config;
 
-use_ok('Statim::Storage::Engine::Redis');
+use_ok('Statim::Storage::Interface::Redis');
 
-my $storage = Statim::Storage::Engine::Redis->new();
+my $storage = Statim::Storage::Interface::Redis->new();
 
 is ($storage->_get_period('collection'), 84600);
 is ($storage->_get_period('collection2'), undef);
