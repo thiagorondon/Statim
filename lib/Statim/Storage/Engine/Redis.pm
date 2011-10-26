@@ -1,5 +1,5 @@
 
-package Statim::Storage;
+package Statim::Storage::Engine::Redis;
 
 use strict;
 use warnings;
