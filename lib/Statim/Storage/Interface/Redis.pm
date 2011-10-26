@@ -221,12 +221,12 @@ sub get {
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts      = $self->_get_timestamp(@args);
-    return $ts unless looks_like_number($ts);
+    #return $ts unless looks_like_number($ts);
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $count   = 0;
 
     my @accessor;    # TODO: we need another way to that  !!!
-
+    
     foreach my $ts_item (@ts_args) {
         my $period_key = $self->_get_period($collection);
         my $period = $self->_calc_step( $period_key, $ts_item );
@@ -235,18 +235,18 @@ sub get {
 
         foreach my $item (@ps) {
             my $value = $self->_get_key_value($item);
-            next unless $value;
-
+            next unless defined($value);
+            
             if ( $count_func eq 'sum' ) {
                 $count += $self->_get_key_value($item);
             }
             elsif ( $count_func eq 'min' ) {
-                $accessor[0] = 0 unless scalar(@accessor);
-                $count = $value if $value < $accessor[0];
+                $count = $accessor[0] = $value if scalar(@accessor) and $value < $accessor[0];
+                $count = $accessor[0] = $value unless scalar(@accessor);
             }
             elsif ( $count_func eq 'max' ) {
                 $accessor[0] = 0 unless scalar(@accessor);
-                $count = $value if $value > $accessor[0];
+                $count = $accessor[0] = $value if $value > $accessor[0];
             }
             elsif ( $count_func eq 'avg' or $count_func eq 'distinct') {
                 push( @accessor, $value );
@@ -265,7 +265,7 @@ sub get {
             $count = distinct (@accessor);
         }
     }
-
+    
     return $count;
 }
 

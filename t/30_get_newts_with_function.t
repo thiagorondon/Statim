@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 5;
+use Test::More tests => 14;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -40,25 +40,86 @@ test_tcp(
             Proto    => 'tcp'
         ) or die "Cannot open client socket: $!";
 
-        note "simple add 1";
-        print {$sock} 'add collection bar:jaz foo:1';
+        my $period = '84600';
+        my $ts1 = $period;
+        my $ts2 = $period * 4;
+        my $ts3 = $period * 10;
+
+        note "simple add bar:jaz foo:1";
+        print {$sock} "add collection bar:jaz foo:1 ts:$ts1";
         my $res = <$sock>;
         is $res, "OK 1\r\n";
 
-        note "simple add 3";
-        print {$sock} 'add collection bar:jaz foo:3';
+        note "simple add bar:jaz foo:3";
+        print {$sock} "add collection bar:jaz foo:3 ts:$ts2";
         $res = <$sock>;
-        is $res, "OK 4\r\n";
+        is $res, "OK 3\r\n";
 
-        note "simple add 2";
-        print {$sock} 'add collection bar:jaz foo:2';
+        note "simple add bar:jaz foo:2";
+        print {$sock} "add collection bar:jaz foo:2 ts:$ts3";
+        $res = <$sock>;
+        is $res, "OK 2\r\n";
+
+        note "simple add bar:ula foo:10";
+        print {$sock} "add collection bar:ula foo:10 ts:$ts2";
+        $res = <$sock>;
+        is $res, "OK 10\r\n";
+        
+        note "simple get bar:jaz foo:max";
+        print {$sock} "get collection bar:jaz ts:$ts1-$ts3 foo:max";
+        $res = <$sock>;
+        is $res, "OK 3\r\n";
+
+        note "simple get bar:ula foo:max";
+        print {$sock} "get collection bar:ula ts:$ts1-$ts3 foo:max";
+        $res = <$sock>;
+        is $res, "OK 10\r\n";
+
+        note "simple get bar:* foo:max";
+        print {$sock} "get collection bar:* ts:$ts1-$ts3 foo:max";
+        $res = <$sock>;
+        is $res, "OK 10\r\n";
+
+        note "simple get bar:jaz foo:min";
+        print {$sock} "get collection bar:jaz ts:$ts1-$ts3 foo:min";
+        $res = <$sock>;
+        is $res, "OK 1\r\n";
+
+        note "simple add bar:ula foo:0";
+        print {$sock} "add collection bar:ula foo:0 ts:$ts2";
+        $res = <$sock>;
+        is $res, "OK 10\r\n";
+
+# bug!
+#        note "simple get bar:ula foo:min";
+#        print {$sock} "get collection bar:ula ts:$ts1-$ts3 foo:min";
+#        $res = <$sock>;
+#        is $res, "OK 0\r\n";
+
+        note "simple get foo:min";
+        print {$sock} "get collection ts:$ts1-$ts3 foo:min";
+        $res = <$sock>;
+        is $res, "OK 1\r\n";
+
+        note "simple get bar:jaz foo:sum";
+        print {$sock} "get collection bar:jaz ts:$ts1-$ts3 foo:sum";
         $res = <$sock>;
         is $res, "OK 6\r\n";
 
-        note "simple get max";
-        print {$sock} 'get collection bar:jaz foo:max';
+        note "simple get foo:sum";
+        print {$sock} "get collection ts:$ts1-$ts3 foo:sum";
         $res = <$sock>;
-        is $res, "OK 3\r\n";
+        is $res, "OK 16\r\n";
+
+        note "simple get foo:avg";
+        print {$sock} "get collection ts:$ts1-$ts3 foo:avg";
+        $res = <$sock>;
+        is $res, "OK 4\r\n";
+
+        note "simple get foo:distinct";
+        print {$sock} "get collection ts:$ts1-$ts3 foo:distinct";
+        $res = <$sock>;
+        is $res, "OK 4\r\n";
 
     }
 );
