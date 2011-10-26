@@ -15,7 +15,7 @@ sub _get_ts {
         
         if ($value =~ /-/) {
           my ($min, $max) = split('-', $value);
-          return '+You ts range is wrong, min > max' if $min > $max;
+          return '+Your ts range is wrong, min > max' if $min > $max;
         }
         return $value;
     }

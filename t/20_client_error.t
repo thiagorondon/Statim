@@ -56,7 +56,7 @@ test_tcp(
         note "get with wront ts range";
         print {$sock} 'get collection bar:test2 jaz:boo foo ts:123456790-12';
         $res = <$sock>;
-        is $res, "CLIENT ERROR You ts range is wrong, min > max\r\n";
+        is $res, "CLIENT ERROR Your ts range is wrong, min > max\r\n";
  
         note "finalize";
         print {$sock} "quit\n";
