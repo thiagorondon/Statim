@@ -221,7 +221,7 @@ sub get {
     return "-no collection" unless $self->_check_collection($collection);
 
     my $ts      = $self->_get_timestamp(@args);
-    #return $ts unless looks_like_number($ts);
+    return $ts  if $ts and substr($ts, 0,1) eq '+';
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $count   = 0;
 
