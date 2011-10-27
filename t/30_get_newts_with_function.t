@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 14;
+use Test::More tests => 15;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -44,6 +44,7 @@ test_tcp(
         my $ts1 = $period;
         my $ts2 = $period * 4;
         my $ts3 = $period * 10;
+        my $ts4 = $period * 15;
 
         note "simple add bar:jaz foo:1";
         print {$sock} "add collection bar:jaz foo:1 ts:$ts1";
@@ -86,15 +87,14 @@ test_tcp(
         is $res, "OK 1\r\n";
 
         note "simple add bar:ula foo:0";
-        print {$sock} "add collection bar:ula foo:0 ts:$ts2";
+        print {$sock} "add collection bar:ula foo:0 ts:$ts4";
         $res = <$sock>;
-        is $res, "OK 10\r\n";
+        is $res, "OK 0\r\n";
 
-# bug!
-#        note "simple get bar:ula foo:min";
-#        print {$sock} "get collection bar:ula ts:$ts1-$ts3 foo:min";
-#        $res = <$sock>;
-#        is $res, "OK 0\r\n";
+        note "simple get bar:ula foo:min";
+        print {$sock} "get collection bar:ula ts:$ts1-$ts4 foo:min";
+        $res = <$sock>;
+        is $res, "OK 0\r\n";
 
         note "simple get foo:min";
         print {$sock} "get collection ts:$ts1-$ts3 foo:min";
