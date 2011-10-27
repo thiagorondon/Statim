@@ -8,6 +8,7 @@ use Scalar::Util qw(looks_like_number);
 use List::Util qw(sum);
 use List::MoreUtils qw(distinct);
 use Statim::Schema;
+use Statim::Function;
 
 use base qw(Statim::Step Statim::Ts);
 
@@ -120,7 +121,7 @@ sub add {
     return "-no collection" unless $self->_check_collection($collection);
 
     #    my $ts         = $self->_get_ts(@args);
-    my $ts = $self->_get_timestamp($collection, @args);
+    my $ts = $self->_get_timestamp( $collection, @args );
     return $ts unless looks_like_number($ts);
 
     my $period_key = $self->_get_period($collection);
@@ -170,7 +171,7 @@ sub _get_key_value {
 }
 
 sub _get_all_possible_keys {
-    my ( $self, $collection, $ts, @argr ) = @_;
+    my ( $self, $collection, $ts, $argr ) = @_;
 
     my @fields = keys %{ $conf->{$collection}->{fields} };
     my @ns;
@@ -179,7 +180,7 @@ sub _get_all_possible_keys {
         my $type = $conf->{$collection}->{fields}->{$item};
         next if $type eq 'count';
 
-        my ($has_item) = grep { /^$item:/ } @argr;
+        my ($has_item) = grep { /^$item:/ } @{$argr};
 
         my $item_key;
         if ($has_item) {
@@ -197,7 +198,7 @@ sub _get_all_possible_keys {
 
     my $key = join( '_-', $collection, $ts, sort @ns );
     my @ps = $self->_get_possible_keys($key);
-    return @ps;
+    return [@ps];
 }
 
 sub _get_timestamp {
@@ -211,7 +212,8 @@ sub _get_timestamp {
         $has_step = 1 if $var eq 'step';
     }
     return '+You must define only step or ts' if $has_ts and $has_step;
-    return $self->_get_step($self->_get_period($collection), @args) if $has_step;
+    return $self->_get_step( $self->_get_period($collection), @args )
+      if $has_step;
     return $self->_get_ts(@args);
 }
 
@@ -220,55 +222,21 @@ sub get {
     my ( $collection, $count_func, @names ) = $self->_parse_args_to_get(@args);
     return "-no collection" unless $self->_check_collection($collection);
 
-    my $ts = $self->_get_timestamp($collection, @args);
+    my $ts = $self->_get_timestamp( $collection, @args );
     return $ts if $ts and substr( $ts, 0, 1 ) eq '+';
     my @ts_args = $self->_get_ts_range( $collection, $ts );
-    my $count = 0;
 
-    my @accessor;    # TODO: we need another way to that  !!!
-
-    foreach my $ts_item (@ts_args) {
-        my $period_key = $self->_get_period($collection);
-        my $period = $self->_calc_step( $period_key, $ts_item );
-
-        my @ps = $self->_get_all_possible_keys( $collection, $period, @names );
-
-        foreach my $item (@ps) {
-            my $value = $self->_get_key_value($item);
-            next unless defined($value);
-
-            if ( $count_func eq 'sum' ) {
-                $count += $self->_get_key_value($item);
-            }
-            elsif ( $count_func eq 'min' ) {
-                $count = $accessor[0] = $value
-                  if scalar(@accessor)
-                      and $value < $accessor[0];
-                $count = $accessor[0] = $value unless scalar(@accessor);
-            }
-            elsif ( $count_func eq 'max' ) {
-                $accessor[0] = 0 unless scalar(@accessor);
-                $count = $accessor[0] = $value if $value > $accessor[0];
-            }
-            elsif ( $count_func eq 'avg' or $count_func eq 'distinct' ) {
-                push( @accessor, $value );
-            }
+    my $func = Statim::Function->new(
+        {
+            collection => $collection,
+            function   => $count_func,
+            ts_args    => [@ts_args],
+            names      => [@names],
+            storage    => $self
         }
-    }
+    );
 
-    if ( $count_func eq 'avg' ) {
-        if ( scalar(@accessor) ) {
-            $count = sum(@accessor) / scalar(@accessor);
-        }
-    }
-
-    if ( $count_func eq 'distinct' ) {
-        if ( scalar(@accessor) ) {
-            $count = distinct(@accessor);
-        }
-    }
-
-    return $count;
+    return $func->exec;
 }
 
 1;
