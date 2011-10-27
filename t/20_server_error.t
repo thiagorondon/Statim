@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 2;
+use Test::More tests => 3;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -38,6 +38,12 @@ test_tcp(
         print {$sock} 'get baz bar foo';
         $res = <$sock>;
         is $res, "SERVER ERROR no collection\r\n";
+
+        note "simple get collection with unknow function";
+        print {$sock} 'get collection foo:aspofdk';
+        $res = <$sock>;
+        is $res, "SERVER ERROR unknow function\r\n";
+
 
         note "finalize";
         print {$sock} "quit\n";

@@ -51,11 +51,11 @@ sub get {
         die "Period must be positive integer"
           unless $period =~ /^\d+$/;
 
-        foreach my $field ( keys %{$conf->{$item}->{fields}} ) {
-            
-            die "The field name is reserved [$field]" 
-              if grep { /^$field$/ } ('ts', 'step');
-            
+        foreach my $field ( keys %{ $conf->{$item}->{fields} } ) {
+
+            die "The field name is reserved [$field]"
+              if grep { /^$field$/ } ( 'ts', 'step' );
+
             my $type = $conf->{$item}->{fields}->{$field};
 
             die "The field [$field]  must be enum or count"
