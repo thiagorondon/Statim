@@ -104,7 +104,7 @@ sub _parse_args_to_get {
       : ( $count_field, 'sum' );
 
     return ( $collection, $count_func,
-        grep { !/^(ts:|$count_field|$count_field:)/ } @names );
+        grep { !/^(ts:|step:|$count_field|$count_field:)/ } @names );
 }
 
 sub _make_key_name {
@@ -120,7 +120,7 @@ sub add {
     return "-no collection" unless $self->_check_collection($collection);
 
     #    my $ts         = $self->_get_ts(@args);
-    my $ts = $self->_get_timestamp(@args);
+    my $ts = $self->_get_timestamp($collection, @args);
     return $ts unless looks_like_number($ts);
 
     my $period_key = $self->_get_period($collection);
@@ -201,7 +201,7 @@ sub _get_all_possible_keys {
 }
 
 sub _get_timestamp {
-    my ( $self, @args ) = @_;
+    my ( $self, $collection, @args ) = @_;
 
     my $has_ts   = 0;
     my $has_step = 0;
@@ -210,9 +210,8 @@ sub _get_timestamp {
         $has_ts   = 1 if $var eq 'ts';
         $has_step = 1 if $var eq 'step';
     }
-
     return '+You must define only step or ts' if $has_ts and $has_step;
-    return $self->_get_step(@args) if $has_step;
+    return $self->_get_step($self->_get_period($collection), @args) if $has_step;
     return $self->_get_ts(@args);
 }
 
@@ -221,7 +220,7 @@ sub get {
     my ( $collection, $count_func, @names ) = $self->_parse_args_to_get(@args);
     return "-no collection" unless $self->_check_collection($collection);
 
-    my $ts = $self->_get_timestamp(@args);
+    my $ts = $self->_get_timestamp($collection, @args);
     return $ts if $ts and substr( $ts, 0, 1 ) eq '+';
     my @ts_args = $self->_get_ts_range( $collection, $ts );
     my $count = 0;
