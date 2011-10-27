@@ -212,9 +212,8 @@ sub _get_timestamp {
         $has_step = 1 if $var eq 'step';
     }
     return '+You must define only step or ts' if $has_ts and $has_step;
-    return $self->_get_step( $self->_get_period($collection), @args )
-      if $has_step;
-    return $self->_get_ts(@args);
+    return $has_step ? 
+      $self->_get_step( $self->_get_period($collection), @args ) : $self->_get_ts(@args);
 }
 
 sub get {
