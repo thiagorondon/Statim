@@ -69,11 +69,26 @@ sub anomaly {
     return 1;
 }
 
+sub list {
+    my ( $self, $items, $times ) = @_;
+
+    my %output;
+    for ( my $loop = 0 ; $loop < scalar( @{$items} ) ; $loop++ ) {
+        $output{ $times->[$loop] } = 0 unless $output{ $times->[$loop] };
+        $output{ $times->[$loop] } += $items->[$loop];
+    }
+
+    return ( keys %output )
+      ? join( ' ', map { join( ':', $_, $output{$_} ) } keys %output )
+      : 0;
+}
+
 sub exec {
     my $self    = shift;
     my $storage = $self->{storage};
     my $count   = 0;
-    my @accessor;    # TODO: we need another way to that  !!!
+    my @accessor;    # TODO: we need another way to do that !!!
+    my @times;       # TODO: we need another way to do that !!!
 
     my $collection = $self->{collection};
     my $period     = $self->{period};
@@ -91,10 +106,11 @@ sub exec {
             my $value = $storage->_get_key_value($item);
             next unless defined($value);
             push( @accessor, $value );
+            push( @times,    $ts_item );
         }
     }
 
-    return $self->$function( \@accessor ) if $self->can($function);
+    return $self->$function( \@accessor, \@times ) if $self->can($function);
     return '-unknow function';
 }
 1;
