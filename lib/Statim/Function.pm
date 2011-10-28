@@ -54,6 +54,21 @@ sub distinct {
     return $n;
 }
 
+sub anomaly {
+    my ( $self, $items ) = @_;
+    my $conf       = $self->{conf};
+    my $collection = $self->{collection};
+    my $param      = $conf->{$collection}->{anomaly} || 10;
+    my $max        = $self->max($items);
+
+    # check if we have just one 'max'
+    return 0 if scalar( scalar( ( grep { /^$max$/ } @{$items} ) ) ) != 1;
+
+    map { return 0 if $_ > ( $max - $param ); } grep { !/^$max$/ } @{$items};
+
+    return 1;
+}
+
 sub exec {
     my $self    = shift;
     my $storage = $self->{storage};

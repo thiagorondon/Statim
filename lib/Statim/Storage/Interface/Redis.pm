@@ -231,7 +231,8 @@ sub get {
             function   => $count_func,
             ts_args    => [@ts_args],
             names      => [@names],
-            storage    => $self
+            storage    => $self,
+            conf       => $conf
         }
     );
 

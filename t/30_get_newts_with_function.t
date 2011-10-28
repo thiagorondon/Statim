@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 30;
+use Test::More tests => 38;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -13,6 +13,7 @@ my $config = test_statim_gen_config( '
 { 
     "collection" : {
         "period" : "84600",
+        "anomaly" : "50",
         "aggregate" : "sum",
         "fields" : {
             "foo" : "count",
@@ -121,6 +122,27 @@ test_tcp(
             print {$sock} "get collection $method:$ts1-$ts3 foo:distinct";
             $res = <$sock>;
             is $res, "OK 4\r\n";
+
+            note "simple add bar:ula foo:500";
+            print {$sock} "add collection bar:ula foo:500 $method:$ts4";
+            $res = <$sock>;
+            is $res, "OK 500\r\n";
+
+            note "simple get foo:anomaly with anomaly";
+            print {$sock} "get collection $method:$ts1-$ts4 foo:anomaly";
+            $res = <$sock>;
+            is $res, "OK 1\r\n";
+
+            note "simple add bar:ula foo:500";
+            print {$sock} "add collection bar:ula foo:500 $method:$ts3";
+            $res = <$sock>;
+            is $res, "OK 500\r\n";
+
+            note "simple get foo:anomaly with no anomaly";
+            print {$sock} "get collection $method:$ts1-$ts4 foo:anomaly";
+            $res = <$sock>;
+            is $res, "OK 0\r\n";
+
         }
     }
 );
