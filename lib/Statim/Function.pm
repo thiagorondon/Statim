@@ -17,23 +17,17 @@ sub new {
 
 sub sum {
     my ( $self, $items ) = @_;
-    my $n = 0;
-    map { $n += $_ } @{$items};
-    return $n;
+    return List::Util::sum @{$items};
 }
 
 sub min {
     my ( $self, $items ) = @_;
-    my $n = defined( $items->[0] ) ? $items->[0] : 0;
-    map { $n = $_ if $_ < $n } @{$items};
-    return $n;
+    return List::Util::min @{$items};
 }
 
 sub max {
     my ( $self, $items ) = @_;
-    my $n = 0;
-    map { $n = $_ if $_ > $n } @{$items};
-    return $n;
+    return List::Util::max @{$items};
 }
 
 sub avg {
@@ -47,11 +41,7 @@ sub avg {
 
 sub distinct {
     my ( $self, $items ) = @_;
-    my $n = 0;
-    if ( scalar( @{$items} ) ) {
-        $n = List::MoreUtils::distinct( @{$items} );
-    }
-    return $n;
+    return scalar(@{$items}) ? List::MoreUtils::distinct( @{$items} ) : 0;
 }
 
 sub anomaly {
