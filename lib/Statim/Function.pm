@@ -44,6 +44,11 @@ sub distinct {
     return scalar( @{$items} ) ? List::MoreUtils::distinct( @{$items} ) : 0;
 }
 
+sub uniq {
+    my ( $self, undef, $items ) = @_;
+    return scalar( @{$items} ) ? List::MoreUtils::uniq( @{$items} ) : 0;
+}
+
 sub anomaly {
     my ( $self, $fargs, $items ) = @_;
     my $conf       = $self->{conf};

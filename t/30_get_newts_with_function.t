@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 58;
+use Test::More tests => 60;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -135,6 +135,11 @@ test_tcp(
 
             note "simple get foo:distinct";
             print {$sock} "get collection $method:$ts1-$ts3 foo:distinct";
+            $res = <$sock>;
+            is $res, "OK 4\r\n";
+
+            note "simple get foo:uniq";
+            print {$sock} "get collection $method:$ts1-$ts3 foo:uniq";
             $res = <$sock>;
             is $res, "OK 4\r\n";
 
