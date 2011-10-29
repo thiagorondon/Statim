@@ -60,23 +60,33 @@ sub anomaly {
 }
 
 sub minmax {
-  my ($self, undef, $items) = @_;
-  return scalar( @{$items} ) ? join(' ', List::MoreUtils::minmax( @{$items} )) : 0;
+    my ( $self, undef, $items ) = @_;
+    return
+      scalar( @{$items} )
+      ? join( ' ', List::MoreUtils::minmax( @{$items} ) )
+      : 0;
 }
 
 sub firstval {
-  my ($self, undef, $items) = @_;
-  return scalar( @{$items} ) ? join(' ', List::MoreUtils::firstval {$_} @{$items} ) : 0;
+    my ( $self, undef, $items ) = @_;
+    return
+      scalar( @{$items} )
+      ? join( ' ', List::MoreUtils::firstval { $_ } @{$items} )
+      : 0;
 }
 
 sub lastval {
-  my ($self, undef, $items) = @_;
-  return scalar( @{$items} ) ? join(' ', List::MoreUtils::lastval {$_} @{$items} ) : 0;
+    my ( $self, undef, $items ) = @_;
+    return
+      scalar( @{$items} )
+      ? join( ' ', List::MoreUtils::lastval { $_ } @{$items} )
+      : 0;
 }
 
 sub frequency {
-  my ( $self, $fargs, $items ) = @_;
-
+    my ( $self, $fargs, $items ) = @_;
+    return 0 unless $fargs;
+    return scalar( ( grep { /^$fargs$/ } @{$items} ) );
 }
 
 sub list {

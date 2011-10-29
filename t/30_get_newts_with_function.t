@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 50;
+use Test::More tests => 58;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -138,10 +138,25 @@ test_tcp(
             $res = <$sock>;
             is $res, "OK 4\r\n";
 
+            note "simple get foo:frequency";
+            print {$sock} "get collection $method:$ts1-$ts4 foo:frequency";
+            $res = <$sock>;
+            is $res, "OK 0\r\n";
+
+            note "simple get foo:frequency(500)";
+            print {$sock} "get collection $method:$ts1-$ts4 foo:frequency(500)";
+            $res = <$sock>;
+            is $res, "OK 0\r\n";
+
             note "simple add bar:ula foo:500";
             print {$sock} "add collection bar:ula foo:500 $method:$ts4";
             $res = <$sock>;
             is $res, "OK 500\r\n";
+
+            note "simple get foo:frequency(500)";
+            print {$sock} "get collection $method:$ts1-$ts4 foo:frequency(500)";
+            $res = <$sock>;
+            is $res, "OK 1\r\n";
 
             note "simple get foo:anomaly with anomaly";
             print {$sock} "get collection $method:$ts1-$ts4 foo:anomaly";
@@ -162,6 +177,11 @@ test_tcp(
             print {$sock} "add collection bar:ula foo:500 $method:$ts3";
             $res = <$sock>;
             is $res, "OK 500\r\n";
+
+            note "simple get foo:frequency(500)";
+            print {$sock} "get collection $method:$ts1-$ts4 foo:frequency(500)";
+            $res = <$sock>;
+            is $res, "OK 2\r\n";
 
             note "simple get foo:anomaly with no anomaly";
             print {$sock} "get collection $method:$ts1-$ts4 foo:anomaly";
