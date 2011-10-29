@@ -16,22 +16,22 @@ sub new {
 }
 
 sub sum {
-    my ( $self, $items ) = @_;
+    my ( $self, undef, $items ) = @_;
     return List::Util::sum @{$items};
 }
 
 sub min {
-    my ( $self, $items ) = @_;
+    my ( $self, undef, $items ) = @_;
     return List::Util::min @{$items};
 }
 
 sub max {
-    my ( $self, $items ) = @_;
+    my ( $self, undef, $items ) = @_;
     return List::Util::max @{$items};
 }
 
 sub avg {
-    my ( $self, $items ) = @_;
+    my ( $self, undef, $items ) = @_;
     my $n = 0;
     if ( scalar( @{$items} ) ) {
         $n = List::Util::sum( @{$items} ) / scalar( @{$items} );
@@ -40,16 +40,16 @@ sub avg {
 }
 
 sub distinct {
-    my ( $self, $items ) = @_;
+    my ( $self, undef, $items ) = @_;
     return scalar(@{$items}) ? List::MoreUtils::distinct( @{$items} ) : 0;
 }
 
 sub anomaly {
-    my ( $self, $items ) = @_;
+    my ( $self, $fargs, $items ) = @_;
     my $conf       = $self->{conf};
     my $collection = $self->{collection};
-    my $param      = $conf->{$collection}->{anomaly} || 10;
-    my $max        = $self->max($items);
+    my $param      = $fargs || $conf->{$collection}->{anomaly} || 10;
+    my $max        = $self->max(undef, $items);
 
     # check if we have just one 'max'
     return 0 if scalar( scalar( ( grep { /^$max$/ } @{$items} ) ) ) != 1;
@@ -60,7 +60,7 @@ sub anomaly {
 }
 
 sub list {
-    my ( $self, $items, $times ) = @_;
+    my ( $self, undef, $items, $times ) = @_;
 
     my %output;
     for ( my $loop = 0 ; $loop < scalar( @{$items} ) ; $loop++ ) {
@@ -100,7 +100,17 @@ sub exec {
         }
     }
 
-    return $self->$function( \@accessor, \@times ) if $self->can($function);
+    my $fname = $function;
+    $fname =~ s/\(.*$//;
+    
+    my $fargs = '';
+    if ($function =~ /\(/) {
+      $fargs = $function;
+      $fargs =~ s/^.*\(//;
+      $fargs =~ s/\)$//;
+    }
+    
+    return $self->$fname( $fargs, \@accessor, \@times ) if $self->can($fname);
     return '-unknow function';
 }
 1;

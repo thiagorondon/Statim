@@ -23,7 +23,7 @@ sub do {
     my $cmd = shift(@args);
 
     foreach my $item (@args) {
-        return () unless $item =~ /^[A-Za-z0-9\_\:\*\-]*$/;
+        return () unless $item =~ /^[A-Za-z0-9\_\:\*\-\(\)]*$/;
         return () if $item =~ /:$/;
         return () if $item =~ /-$/;
     }
