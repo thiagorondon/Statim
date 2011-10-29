@@ -64,6 +64,16 @@ sub minmax {
   return scalar( @{$items} ) ? join(' ', List::MoreUtils::minmax( @{$items} )) : 0;
 }
 
+sub firstval {
+  my ($self, undef, $items) = @_;
+  return scalar( @{$items} ) ? join(' ', List::MoreUtils::firstval {$_} @{$items} ) : 0;
+}
+
+sub lastval {
+  my ($self, undef, $items) = @_;
+  return scalar( @{$items} ) ? join(' ', List::MoreUtils::lastval {$_} @{$items} ) : 0;
+}
+
 sub frequency {
   my ( $self, $fargs, $items ) = @_;
 

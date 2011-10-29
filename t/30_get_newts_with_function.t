@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 44;
+use Test::More tests => 50;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -92,6 +92,16 @@ test_tcp(
             print {$sock} "get collection bar:jaz $method:$ts1-$ts3 foo:minmax";
             $res = <$sock>;
             is $res, "OK 1 3\r\n";
+
+            note "simple get bar:jaz foo:firstval";
+            print {$sock} "get collection bar:jaz $method:$ts1-$ts3 foo:firstval";
+            $res = <$sock>;
+            is $res, "OK 1\r\n";
+
+            note "simple get bar:jaz foo:lastval";
+            print {$sock} "get collection bar:jaz $method:$ts1-$ts3 foo:lastval";
+            $res = <$sock>;
+            is $res, "OK 2\r\n";
 
             note "simple add bar:ula foo:0";
             print {$sock} "add collection bar:ula foo:0 $method:$ts4";
