@@ -88,6 +88,11 @@ test_tcp(
             $res = <$sock>;
             is $res, "OK 1\r\n";
 
+            note "simple get bar:jaz foo:minmax";
+            print {$sock} "get collection bar:jaz $method:$ts1-$ts3 foo:minmax";
+            $res = <$sock>;
+            is $res, "OK 1 3\r\n";
+
             note "simple add bar:ula foo:0";
             print {$sock} "add collection bar:ula foo:0 $method:$ts4";
             $res = <$sock>;

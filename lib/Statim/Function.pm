@@ -41,7 +41,7 @@ sub avg {
 
 sub distinct {
     my ( $self, undef, $items ) = @_;
-    return scalar(@{$items}) ? List::MoreUtils::distinct( @{$items} ) : 0;
+    return scalar( @{$items} ) ? List::MoreUtils::distinct( @{$items} ) : 0;
 }
 
 sub anomaly {
@@ -49,7 +49,7 @@ sub anomaly {
     my $conf       = $self->{conf};
     my $collection = $self->{collection};
     my $param      = $fargs || $conf->{$collection}->{anomaly} || 10;
-    my $max        = $self->max(undef, $items);
+    my $max        = $self->max( undef, $items );
 
     # check if we have just one 'max'
     return 0 if scalar( scalar( ( grep { /^$max$/ } @{$items} ) ) ) != 1;
@@ -57,6 +57,16 @@ sub anomaly {
     map { return 0 if $_ > ( $max - $param ); } grep { !/^$max$/ } @{$items};
 
     return 1;
+}
+
+sub minmax {
+  my ($self, undef, $items) = @_;
+  return scalar( @{$items} ) ? join(' ', List::MoreUtils::minmax( @{$items} )) : 0;
+}
+
+sub frequency {
+  my ( $self, $fargs, $items ) = @_;
+
 }
 
 sub list {
@@ -102,14 +112,14 @@ sub exec {
 
     my $fname = $function;
     $fname =~ s/\(.*$//;
-    
+
     my $fargs = '';
-    if ($function =~ /\(/) {
-      $fargs = $function;
-      $fargs =~ s/^.*\(//;
-      $fargs =~ s/\)$//;
+    if ( $function =~ /\(/ ) {
+        $fargs = $function;
+        $fargs =~ s/^.*\(//;
+        $fargs =~ s/\)$//;
     }
-    
+
     return $self->$fname( $fargs, \@accessor, \@times ) if $self->can($fname);
     return '-unknow function';
 }
