@@ -1,7 +1,7 @@
 use warnings;
 use strict;
 
-use Test::More tests => 60;
+use Test::More tests => 62;
 use Test::TCP;
 
 use lib 't/tlib';
@@ -197,6 +197,11 @@ test_tcp(
             print {$sock} "get collection $method:$ts1-$ts4 foo:list";
             $res = <$sock>;
             like $res, qr/OK /;
+
+            note "simple get foo:list";
+            print {$sock} "get collection $method:$ts1-$ts4 foo:trend(5)";
+            $res = <$sock>;
+            is $res, "OK 169.333333333333 169.333333333333 169.333333333333 169.333333333333 169.333333333333\r\n";
 
         }
     }

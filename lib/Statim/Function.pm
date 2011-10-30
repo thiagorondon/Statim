@@ -108,6 +108,14 @@ sub list {
       : 0;
 }
 
+sub trend {
+  my ($self, $fargs, $items) = @_;
+
+  # TODO: How to do that ?
+  my $output = join(' ', map { $self->avg($fargs, $items) } 1 .. $fargs);
+  return $output;
+}
+
 sub exec {
     my $self    = shift;
     my $storage = $self->{storage};
