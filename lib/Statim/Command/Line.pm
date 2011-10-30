@@ -29,13 +29,14 @@ sub do {
     else {
         my $cmd = shift(@args);
         $ret = $cmds->$cmd(@args);
-        my $se = substr($ret, 0, 1);
+        my $se = defined($ret) ? substr($ret, 0, 1) : '';
         if ($se eq '-') {
             $ret = "SERVER ERROR " . substr($ret, 1);
         } elsif ($se eq '+') {
             $ret = "CLIENT ERROR " . substr($ret, 1);  
         } else {
-            $ret = "OK " . $ret;
+            # TODO: Bug here, with no data we return just 'OK' in get.
+            $ret = defined($ret) ? "OK $ret" : 'OK 0';
         }
     }
     return $ret;

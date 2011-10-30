@@ -1,10 +1,9 @@
 { 
-	"collection1" : {
+	"collection" : {
 		"period" : "84600",
 		"fields" : {
 			"foo" : "count",
 			"bar" : "enum",
-            		"jaz" : "enum"
 		},
         "aggregate" : "sum"
 	}
