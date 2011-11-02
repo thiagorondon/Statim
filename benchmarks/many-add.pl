@@ -91,7 +91,7 @@ if ( $pid > 0 ) {
 
     my $ds = Chart::Clicker::Data::DataSet->new(series => [ @series ]);
 
-    $cc->title->text('benchmark/many-add.pl');
+    $cc->title->text($0);
     $cc->title->padding->bottom(2);
     $cc->add_to_datasets($ds);
 
