@@ -10,10 +10,9 @@ use List::MoreUtils qw(distinct);
 use Statim::Schema;
 use Statim::Function;
 
-use base qw(Statim::Step Statim::Ts);
+use base qw(Statim::Storage::Interface);
 
 # TODO: Split Storage // Schema checks // Storage::Engine.
-
 our $conf;
 
 sub new {
@@ -23,13 +22,8 @@ sub new {
 
     my $schema = Statim::Schema->new;
     $conf = $schema->get;
-
+    $self->conf($conf);
     return $self;
-}
-
-sub _get_period {
-    my ( $self, $collection ) = @_;
-    return $conf->{$collection}->{period};
 }
 
 sub _get_counter {
